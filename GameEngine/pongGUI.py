@@ -1,14 +1,25 @@
-import tkinter as tk
+from tkinter import *
 
-window = tk.Tk()
+def startGame():
+    global wFrame, window
+    wFrame.destroy()
+    wFrame = Frame(window)
+    wFrame.pack()
 
-title = tk.Label(window, text="Pi-Pong!")
+window = Tk()
+window.title("Pi-Pong")
+window.geometry("800x600")
+wFrame = Frame(window)
+
+title = Label(wFrame, text="Pi-Pong!")
 title.pack()
 
-cnv = tk.Canvas(window, width=200, height=150)
+cnv = Canvas(wFrame, width=200, height=150)
 cnv.pack()
 
-btn = tk.Button(window, text="Play Game!")
+btn = Button(wFrame, text="Play Game!", command=startGame)
 btn.pack()
+
+wFrame.pack()
 
 window.mainloop()
