@@ -2,6 +2,10 @@ from tkinter import *
 
 fGameStarted = False
 
+def updateBallPos(canvas, ball):
+    canvas.move(ball, 5, 5)
+    canvas.after(100, updateBallPos, canvas, ball)
+
 def clearScreen():
     global wFrame, window
     wFrame.destroy()
@@ -14,10 +18,19 @@ def startGame():
     clearScreen()
     cnv = Canvas(wFrame, bg="#121212", width=800, height=600)
     midline = cnv.create_rectangle(395, 0, 405, 600, fill="#FFFFFF")
+
     paddle1 = cnv.create_rectangle(10, 10, 30, 100, fill="red")
+    paddleBox1 = cnv.bbox(paddle1)
+
     paddle2 = cnv.create_rectangle(770, 10, 790, 100, fill="blue")
+    paddleBox2 = cnv.bbox(paddle2)
+
+    ball = cnv.create_rectangle(390, 290, 410, 310, fill="white")
+    ballBox = cnv.bbox(ball)
+
     cnv.pack(fill=BOTH, expand=1)
     fGameStarted = True
+    updateBallPos(cnv, ball)
 
 
 window = Tk()
@@ -36,13 +49,6 @@ btn.pack()
 
 wFrame.pack()
 
-# if fGameStarted:
-#     cnv = Canvas(wFrame, bg="#121212", width=800, height=600)
-#     midline = cnv.create_rectangle(395, 0, 405, 600, fill="#FFFFFF")
-#     paddle1 = cnv.create_rectangle(10, 10, 30, 100, fill="red")
-#     paddle2 = cnv.create_rectangle(770, 10, 790, 100, fill="blue")
-#     cnv.pack(fill=BOTH, expand=1)
-
 def keypress(event):
     y1 = 0
     if event.char == "w": y1 = -10
@@ -53,6 +59,9 @@ def keypress(event):
     if event.char == "o": y2 = -10
     elif event.char == "l": y2 = 10
     cnv.move(paddle2, 0, y2)
+
+
+
  
 window.bind("<Key>", keypress)
 
