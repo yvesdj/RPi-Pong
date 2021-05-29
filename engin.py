@@ -34,11 +34,11 @@ def on_message(client, userdata, msg):
    load = str(msg.payload)
    if load.find("SRC=CTRL1") != -1:
       if load.find("ACTION=UP") != -1:
-          if heightR < 0:
-              heightR = 0
+          if heightL < 0:
+              heightL = 0
       elif load.find("ACTION=DN") != -1:
-          if heightR > 600:
-              heightR =600
+          if heightL > 600:
+              heightL =600
       elif load.find("ACTION=SP") != -1:
           if speedL < speedMax:
               speedL += speedIncrement
