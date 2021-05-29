@@ -3,6 +3,18 @@ import paho.mqtt.client as mqtt
 from time import sleep
 # GPIO.setmode(GPIO.BCM)
 
+
+
+class Ball:
+   x = 0
+   y = 0
+
+   def __init__(self, x, y):
+       self.x = x
+       self.y = y
+
+
+
 #variabelen
 broker = "broker.mqttdashboard.com" # "87.67.133.107"
 topic = "TeamCL1-4/Pong"
@@ -11,7 +23,8 @@ speedL,speedR=1,1
 rondes=0
 puntenL,puntenR=0,0
 puntenLT,puntenRT=0,0
-ballX,ballY=0,0
+# ballX,ballY=0,0
+ball = Ball(390, 410)
 
 #verbinding maken met het topic
 def on_connect(client, userdata, flags, rc):
@@ -80,8 +93,20 @@ def on_message(client, userdata, msg):
       heightR = 10
       heightL = 10
 
+   else:
+      print("Couldn't resolve message: " + load)
+
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
+
+def updateBallPos(ball, refreshTime):
+   ball.x += 5
+   ball.y += 5
+
+   client.publish(topic, payload="SRC=ENG; DST=DISPL; BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y) + ";")
+   
+   sleep(refreshTime)
+
 
 
 #MQTT instellen
@@ -96,8 +121,11 @@ try:
 
    client.connect(broker, 1883)
 
-   # client.loop_start()
-   client.loop_forever()
+   client.loop_start()
+   # client.loop_forever()
+
+   while(True):
+      updateBallPos(ball, 5)
 
 #cleanup
 except KeyboardInterrupt: 
