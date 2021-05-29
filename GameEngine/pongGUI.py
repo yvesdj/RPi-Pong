@@ -1,10 +1,70 @@
 from tkinter import *
+import paho.mqtt.client as mqtt
+
+
+
+class Ball:
+    def __init__(self, x: int, y: int, size: int):
+        self.x = x
+        self.y = y
+        self.size = size
+
+
+
+ball = Ball(0, 0, 10)
+
+broker = "broker.mqttdashboard.com"
+topic = "TeamCL1-4/Pong"
+client = mqtt.Client()
+
+def extractVarValueFromString(message: str, searchVar: str, endNotation: str):
+    start = message.find(searchVar)
+    end = message[start:].find(endNotation)
+
+    return int(message[start + len(searchVar) : start + end])
+
+def getBallPos(ball: Ball, message: str):
+    ball.x = extractVarValueFromString(message, "BALL_X=", ";")
+    ball.y = extractVarValueFromString(message, "BALL_Y=", ";")
+
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code", rc)
+    client.subscribe(topic)
+
+def on_subscribe(client, userdata, mid, granted_qos):
+    print("Subscribed: " + str(mid) + " " + str(granted_qos))
+
+def on_message(client, userdata, msg):
+    load = str(msg.payload)
+    print("Payload: " + load)
+    if load.find("DST=DISPL") != -1:
+        if load.find("BALL") != -1:
+            global ball
+            getBallPos(ball, load)
+            # print(result)
+
+
+    else:
+        print("Not for me.")
+    
+
+def on_publish(client, userdata, mid):
+    print("mid: " + str(mid))
+
+
 
 fGameStarted = False
 
-def updateBallPos(canvas, ball):
-    canvas.move(ball, 5, 5)
-    canvas.after(100, updateBallPos, canvas, ball)
+
+
+def updateBallPos(canvas: Canvas, ballTexture):
+    global ball
+    # canvas.move(ballTexture, ball.x, ball.y)
+    # canvas.after(100, updateBallPos, canvas, ballTexture)
+    # print(ball.x, ball.y)
+    canvas.coords(ballTexture, ball.x, ball.y, ball.x + ball.size, ball.y + ball.size)
+    canvas.after(100, updateBallPos, canvas, ballTexture)
 
 def clearScreen():
     global wFrame, window
@@ -20,17 +80,17 @@ def startGame():
     midline = cnv.create_rectangle(395, 0, 405, 600, fill="#FFFFFF")
 
     paddle1 = cnv.create_rectangle(10, 10, 30, 100, fill="red")
-    paddleBox1 = cnv.bbox(paddle1)
+    # paddleBox1 = cnv.bbox(paddle1)
 
     paddle2 = cnv.create_rectangle(770, 10, 790, 100, fill="blue")
-    paddleBox2 = cnv.bbox(paddle2)
+    # paddleBox2 = cnv.bbox(paddle2)
 
-    ball = cnv.create_rectangle(390, 290, 410, 310, fill="white")
-    ballBox = cnv.bbox(ball)
+    ballTexture = cnv.create_rectangle(390, 290, 410, 310, fill="white")
+    # ballBox = cnv.bbox(ballTexture)
 
     cnv.pack(fill=BOTH, expand=1)
     fGameStarted = True
-    updateBallPos(cnv, ball)
+    updateBallPos(cnv, ballTexture)
 
 
 window = Tk()
@@ -65,4 +125,25 @@ def keypress(event):
  
 window.bind("<Key>", keypress)
 
-window.mainloop()
+
+try:
+
+    client.on_connect = on_connect
+    client.on_subscribe = on_subscribe
+    client.on_message = on_message
+    client.on_publish = on_publish
+
+    client.connect(broker, 1883)
+
+    client.loop_start()
+    # client.loop_forever()
+
+    window.mainloop()
+    
+    
+
+except KeyboardInterrupt:
+    print("\nStopping this script.")
+
+except:
+    print("Something went wrong.")

@@ -102,9 +102,12 @@ def on_message(client, userdata, msg):
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
 
+def moveBall(ball, velocityX, velocityY):
+   ball.x += velocityX
+   ball.y += velocityY
+
 def updateBallPos(ball, refreshTime):
-   ball.x += 5
-   ball.y += 5
+   moveBall(ball, 5, 5)
 
    client.publish(topic, payload="SRC=ENG; DST=DISPL; BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y) + ";")
    
