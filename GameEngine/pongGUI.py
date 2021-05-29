@@ -1,21 +1,14 @@
+from Model.Ball import Ball
 from tkinter import *
 import paho.mqtt.client as mqtt
 
 
 
-class Ball:
-    def __init__(self, x: int, y: int, size: int):
-        self.x = x
-        self.y = y
-        self.size = size
 
 
 
-ball = Ball(0, 0, 10)
 
-broker = "broker.mqttdashboard.com"
-topic = "TeamCL1-4/Pong"
-client = mqtt.Client()
+
 
 def extractVarValueFromString(message: str, searchVar: str, endNotation: str):
     start = message.find(searchVar)
@@ -26,7 +19,6 @@ def extractVarValueFromString(message: str, searchVar: str, endNotation: str):
 def getBallPos(ball: Ball, message: str):
     ball.x = extractVarValueFromString(message, "BALL_X=", ";")
     ball.y = extractVarValueFromString(message, "BALL_Y=", ";")
-
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code", rc)
@@ -47,14 +39,11 @@ def on_message(client, userdata, msg):
 
     else:
         print("Not for me.")
-    
 
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
 
 
-
-fGameStarted = False
 
 
 
@@ -92,23 +81,6 @@ def startGame():
     fGameStarted = True
     updateBallPos(cnv, ballTexture)
 
-
-window = Tk()
-window.title("Pi-Pong")
-window.geometry("800x600")
-wFrame = Frame(window)
-
-title = Label(wFrame, text="Pi-Pong!")
-title.pack()
-
-cnv = Canvas(wFrame, width=200, height=150)
-cnv.pack()
-
-btn = Button(wFrame, text="Play Game!", command=startGame)
-btn.pack()
-
-wFrame.pack()
-
 def keypress(event):
     y1 = 0
     if event.char == "w": y1 = -10
@@ -121,29 +93,51 @@ def keypress(event):
     cnv.move(paddle2, 0, y2)
 
 
+if __name__ == "__main__":
+    ball = Ball(390, 410, 10)
 
- 
-window.bind("<Key>", keypress)
+    broker = "broker.mqttdashboard.com"
+    topic = "TeamCL1-4/Pong"
+    client = mqtt.Client()
 
+    fGameStarted = False
 
-try:
+    window = Tk()
+    window.title("Pi-Pong")
+    window.geometry("800x600")
+    wFrame = Frame(window)
 
-    client.on_connect = on_connect
-    client.on_subscribe = on_subscribe
-    client.on_message = on_message
-    client.on_publish = on_publish
+    title = Label(wFrame, text="Pi-Pong!")
+    title.pack()
 
-    client.connect(broker, 1883)
+    cnv = Canvas(wFrame, width=200, height=150)
+    cnv.pack()
 
-    client.loop_start()
-    # client.loop_forever()
+    btn = Button(wFrame, text="Play Game!", command=startGame)
+    btn.pack()
 
-    window.mainloop()
+    wFrame.pack()
     
-    
+    window.bind("<Key>", keypress)
 
-except KeyboardInterrupt:
-    print("\nStopping this script.")
+    try:
 
-except:
-    print("Something went wrong.")
+        client.on_connect = on_connect
+        client.on_subscribe = on_subscribe
+        client.on_message = on_message
+        client.on_publish = on_publish
+
+        client.connect(broker, 1883)
+
+        client.loop_start()
+        # client.loop_forever()
+
+        window.mainloop()
+        
+        
+
+    except KeyboardInterrupt:
+        print("\nStopping this script.")
+
+    except:
+        print("Something went wrong.")
