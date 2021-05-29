@@ -1,3 +1,5 @@
+from Model.Player import Player
+from Model.Paddle import Paddle
 from Model.Ball import Ball
 import paho.mqtt.client as mqtt
 # import RPi.GPIO as GPIO
@@ -21,44 +23,67 @@ def on_subscribe(client, userdata, mid, granted_qos):
 
 #actie bij detecteren van een bericht
 def on_message(client, userdata, msg):
-   global heightL, heightR, puntenL, puntenR
-   global puntenLT, puntenRT, speedL, speedR
-   global rondes, speedMax, speedIncrement
-   global fieldWidth, fieldHeight
+    global player1, player2
+    global heightL, heightR, puntenL, puntenR
+    global puntenLT, puntenRT, speedL, speedR
+    global rondes, speedMax, speedIncrement
+    global fieldWidth, fieldHeight
 
-   load = str(msg.payload)
-   if load.find("SRC=CTRL1") != -1:
-      if load.find("ACTION=UP") != -1:
-          if heightL < 0:
-              heightL = 0
-      elif load.find("ACTION=DN") != -1:
-          if heightL > fieldHeight:
-              heightL = fieldHeight
-      elif load.find("ACTION=SP") != -1:
-          if speedL < speedMax:
-              speedL += speedIncrement
-          else:
-              speedL = speedIncrement
-      client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=L; HEIGHT=" + str(heightL) + ";",qos=0)
+    load = str(msg.payload)
+    if load.find("SRC=CTRL1") != -1:
+        if load.find("ACTION=UP") != -1:
+            if player1.paddle.y > 0:
+                player1.paddle.y -= player1.paddle.speed
+            else:
+                player1.paddle.y = 0
+            # if heightL < 0:
+            #     heightL = 0
+        elif load.find("ACTION=DN") != -1:
+            if player1.paddle.y < fieldHeight:
+                player1.paddle.y += player1.paddle.speed
+            else:
+                player1.paddle.y = fieldHeight
+            # if heightL > fieldHeight:
+            #     heightL = fieldHeight
+        elif load.find("ACTION=SP") != -1:
+            fSpeedMax = False
+            if player1.paddle.speed < speedMax and not fSpeedMax:
+                player1.paddle.speed += speedIncrement
+            else:
+                player1.paddle.speed = speedMax
+                fSpeedMax = True
 
-   elif load.find("SRC=CTRL2") != -1:
-      if load.find("ACTION=UP") != -1:
-          heightR -= speedR
-          if heightR < 0:
-              heightR = 0
-      elif load.find("ACTION=DN") != -1:
-          heightR += speedR
-          if heightR > fieldHeight:
-              heightR = fieldHeight
-      elif load.find("ACTION=SP") != -1:
-         if speedR < speedMax:
-             speedR += speedIncrement
-         else:
-             speedR = speedIncrement
-      client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(heightR) + ";",qos=0)
+            if player1.paddle.speed > 5 and fSpeedMax:
+                player1.paddle.speed -= speedIncrement
+            else:
+                player1.paddle.speed = 5
+                fSpeedMax = False
 
-   else:
-      print("Couldn't resolve message: " + load)
+            print(player1.paddle.speed)
+            # if speedL < speedMax:
+            #     speedL += speedIncrement
+            # else:
+            #     speedL = speedIncrement
+        client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=L; HEIGHT=" + str(player1.paddle.y) + ";",qos=0)
+
+    elif load.find("SRC=CTRL2") != -1:
+        if load.find("ACTION=UP") != -1:
+            heightR -= speedR
+            if heightR < 0:
+                heightR = 0
+        elif load.find("ACTION=DN") != -1:
+            heightR += speedR
+            if heightR > fieldHeight:
+                heightR = fieldHeight
+        elif load.find("ACTION=SP") != -1:
+            if speedR < speedMax:
+                speedR += speedIncrement
+            else:
+                speedR = speedIncrement
+        client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(heightR) + ";",qos=0)
+
+    else:
+        print("Couldn't resolve message: " + load)
 
 
 def StartNew(winner = "N/A"):
@@ -130,41 +155,52 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
 
 
 if __name__ == "__main__":
-   #MQTT instellen
-   client = mqtt.Client()
-   #variabelen
-   broker = "broker.mqttdashboard.com" # "87.67.133.107"
-   topic = "TeamCL1-4/Pong"
-   heightL,heightR=10,10
-   speedL,speedR=1,1
-   rondes=0
-   puntenL,puntenR=0,0
-   puntenLT,puntenRT=0,0
-   speedMax,speedIncrement = 15,5
+    #MQTT instellen
+    client = mqtt.Client()
+    #variabelen
+    broker = "broker.mqttdashboard.com" # "87.67.133.107"
+    topic = "TeamCL1-4/Pong"
 
-   fieldWidth, fieldHeight = 800, 600
+    heightL,heightR=10,10
+    speedL,speedR=1,1
 
-   ball = Ball(390, 410, 10)
-   fBallGoingDown = True
-   fBallGoingRight = True
+    rondes=0
+    puntenL,puntenR=0,0
+
+    # puntenLT,puntenRT=0,0
+
+    speedMax,speedIncrement = 15,5
+
+    fieldWidth, fieldHeight = 800, 600
+
+    paddle1 = Paddle(10, 10, 10, 100, 5)
+    paddle2 = Paddle(10, 10, 10, 100, 5)
+
+    player1 = Player(paddle1, 0)
+    player2 = Player(paddle2, 0)
 
 
-   #try om het correct af te kunnen afsluiten
-   try:
-      client.on_connect = on_connect
-      client.on_subscribe = on_subscribe
-      client.on_message = on_message
-      client.on_publish = on_publish
+    ball = Ball(390, 410, 10)
+    fBallGoingDown = True
+    fBallGoingRight = True
 
-      client.connect(broker, 1883)
 
-      client.loop_start()
-      # client.loop_forever()
+    #try om het correct af te kunnen afsluiten
+    try:
+        client.on_connect = on_connect
+        client.on_subscribe = on_subscribe
+        client.on_message = on_message
+        client.on_publish = on_publish
 
-      while(True):
-         updateBallPos(ball, 10, 0.5)
+        client.connect(broker, 1883)
 
-   #cleanup
-   except KeyboardInterrupt: 
-      print("\nStopping this script.")
-   
+        client.loop_start()
+        # client.loop_forever()
+
+        while(True):
+            updateBallPos(ball, 10, 0.5)
+
+    #cleanup
+    except KeyboardInterrupt: 
+        print("\nStopping this script.")
+
