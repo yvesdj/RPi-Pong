@@ -1,10 +1,10 @@
 import paho.mqtt.client as mqtt
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 from time import sleep
-GPIO.setmode(GPIO.BCM)
+# GPIO.setmode(GPIO.BCM)
 
 #variabelen
-broker = "87.67.133.107"
+broker = "broker.mqttdashboard.com" # "87.67.133.107"
 topic = "TeamCL1-4/Pong"
 heightL,heightR=10,10
 speedL,speedR=1,1
@@ -20,8 +20,13 @@ def on_connect(client, userdata, flags, rc):
     else:
 	    print (f"Connection failed with code {rc}")
     client.subscribe(topic)
-#actie bij detecteren van een bericht
 
+
+def on_subscribe(client, userdata, mid, granted_qos):
+    print("Subscribed: " + str(mid) + " " + str(granted_qos))
+
+
+#actie bij detecteren van een bericht
 def on_message(client, userdata, msg):
    global heightL, heightR, puntenL, puntenR, puntenLT, puntenRT, speedL, speedR, rondes
 
@@ -38,7 +43,7 @@ def on_message(client, userdata, msg):
             speedL += 1
       else:
          speedL =1
-      client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=L; HEIGHT=" + heightL + ";",qos=0)
+      client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=L; HEIGHT=" + str(heightL) + ";",qos=0)
 
    elif load.find("SRC=CTRL2") != -1:
       if load.find("ACTION=UP") != -1:
@@ -52,7 +57,7 @@ def on_message(client, userdata, msg):
             speedR += 1
       else:
          speedR = 1
-      client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + heightR + ";",qos=0)
+      client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(heightR) + ";",qos=0)
 
    elif load.find("MSG=NEWROUND") != -1:
       if puntenL > puntenR:
@@ -75,15 +80,24 @@ def on_message(client, userdata, msg):
       heightR = 10
       heightL = 10
 
+def on_publish(client, userdata, mid):
+    print("mid: " + str(mid))
+
+
 #MQTT instellen
 client = mqtt.Client()
-client.on_connect = on_connect
-client.on_message = on_message
-client.connect(broker, 1883)
 
 #try om het correct af te kunnen afsluiten
 try:
-    client.loop_forever()
+   client.on_connect = on_connect
+   client.on_subscribe = on_subscribe
+   client.on_message = on_message
+   client.on_publish = on_publish
+
+   client.connect(broker, 1883)
+
+   # client.loop_start()
+   client.loop_forever()
 
 #cleanup
 except KeyboardInterrupt: 
