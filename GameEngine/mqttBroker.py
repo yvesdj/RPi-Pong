@@ -1,14 +1,14 @@
 #!/usr/bin/python
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 import time as Time
 import paho.mqtt.client as mqtt
 import re
 
-GPIO.setmode(GPIO.BCM)
+# GPIO.setmode(GPIO.BCM)
 
-clientId = "clientId-rNWNvaz5qY"
-topic = "rPiPong/engine"
-client = mqtt.Client(client_id=clientId)
+# clientId = "clientId-rNWNvaz5qY"
+topic = "TeamCL1-4/Pong"
+client = mqtt.Client()
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code", rc)
@@ -32,10 +32,14 @@ try:
     client.on_message = on_message
     client.on_publish = on_publish
 
-    client.connect("broker.mqttdashboard.com", 1883)
+    client.connect("87.67.133.107", 1883)
 
-    # client.loop_start()
-    client.loop_forever()
+    client.loop_start()
+    # client.loop_forever()
+    
+    while (True):
+        Time.sleep(2)
+        client.publish(topic, payload="test",qos=0)
 
 
 
@@ -45,5 +49,5 @@ except KeyboardInterrupt:
 except:
     print("Something went wrong.")
 
-finally:
-    GPIO.cleanup()
+# finally:
+#     # GPIO.cleanup()
