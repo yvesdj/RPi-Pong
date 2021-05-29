@@ -12,6 +12,7 @@ rondes=0
 puntenL,puntenR=0,0
 puntenLT,puntenRT=0,0
 ballX,ballY=0,0
+speedMax,speedIncrement = 15,5
 
 #verbinding maken met het topic
 def on_connect(client, userdata, flags, rc):
@@ -28,35 +29,37 @@ def on_subscribe(client, userdata, mid, granted_qos):
 
 #actie bij detecteren van een bericht
 def on_message(client, userdata, msg):
-   global heightL, heightR, puntenL, puntenR, puntenLT, puntenRT, speedL, speedR, rondes
+   global heightL, heightR, puntenL, puntenR, puntenLT, puntenRT, speedL, speedR, rondes, speedMax, speedIncrement
 
    load = str(msg.payload)
    if load.find("SRC=CTRL1") != -1:
       if load.find("ACTION=UP") != -1:
-         if heightL < 600:
-            heightL -= speedL
+          if heightR < 0:
+              heightR = 0
       elif load.find("ACTION=DN") != -1:
-         if heightL > 1:
-            heightL += speedL
+          if heightR > 600:
+              heightR =600
       elif load.find("ACTION=SP") != -1:
-         if speedL != 3:
-            speedL += 1
-      else:
-         speedL =1
+          if speedL < speedMax:
+              speedL += speedIncrement
+          else:
+              speedL = speedIncrement
       client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=L; HEIGHT=" + str(heightL) + ";",qos=0)
 
    elif load.find("SRC=CTRL2") != -1:
       if load.find("ACTION=UP") != -1:
-         if heightR < 600:
-            heightR -= speedR
+          heightR -= speedR
+          if heightR < 0:
+              heightR = 0
       elif load.find("ACTION=DN") != -1:
-         if heightR > 1:
-            heightR += speedR
+          heightR += speedR
+          if heightR > 600:
+              heightR =600
       elif load.find("ACTION=SP") != -1:
-         if speedR != 3:
-            speedR += 1
-      else:
-         speedR = 1
+         if speedR < speedMax:
+             speedR += speedIncrement
+         else:
+             speedR = speedIncrement
       client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(heightR) + ";",qos=0)
 
    elif load.find("MSG=NEWROUND") != -1:
