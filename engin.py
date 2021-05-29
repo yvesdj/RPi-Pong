@@ -75,26 +75,31 @@ def on_message(client, userdata, msg):
              speedR = speedIncrement
       client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(heightR) + ";",qos=0)
 
-   elif load.find("MSG=NEWROUND") != -1:
-      if puntenL > puntenR:
-         puntenLT += puntenL
-         puntenL = 0
-         puntenR = 0
-      else:
-         puntenRT += puntenR
-         puntenR = 0
-         puntenL = 0
-      rondes += 1
-   elif load.find("MSG=NEWGAME") != -1:
-      puntenL = 0
-      puntenR = 0
-      puntenLT = 0
-      puntenRT = 0
-      rondes = 0
-      speedR = 1
-      speedL = 1
-      heightR = 10
-      heightL = 10
+def StartNew(winner = "N/A"):
+    global rondes
+    if winner != "N/A":
+        #TODO voeg tmp punten van winner toe aan zijn perm punten
+        puntenLT = 0
+        puntenRT = 0
+        
+    if rondes < 10:
+        rondes += 1
+        #TODO Wijs kant (L/R) toe aan elke conroller
+        #TODO Stuur bericht naar controllers en display dat nieuwe ronde begint
+        
+    else:
+        #spel beïndigd
+        #TODO stuur bericht naar display dat het spel is Geëindigd
+        #TODO wacht op een reply van een display
+        puntenL = 0
+        puntenR = 0
+        puntenLT = 0
+        puntenRT = 0
+        rondes = 0
+        speedR = 1
+        speedL = 1
+        heightR = 10
+        heightL = 10   
 
    else:
       print("Couldn't resolve message: " + load)
