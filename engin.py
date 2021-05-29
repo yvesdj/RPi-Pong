@@ -75,6 +75,10 @@ def on_message(client, userdata, msg):
              speedR = speedIncrement
       client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(heightR) + ";",qos=0)
 
+   else:
+      print("Couldn't resolve message: " + load)
+
+
 def StartNew(winner = "N/A"):
     global rondes
     if winner != "N/A":
@@ -100,9 +104,6 @@ def StartNew(winner = "N/A"):
         speedL = 1
         heightR = 10
         heightL = 10   
-
-   else:
-      print("Couldn't resolve message: " + load)
 
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
