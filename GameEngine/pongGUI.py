@@ -4,12 +4,6 @@ import paho.mqtt.client as mqtt
 
 
 
-
-
-
-
-
-
 def extractVarValueFromString(message: str, searchVar: str, endNotation: str):
     start = message.find(searchVar)
     end = message[start:].find(endNotation)

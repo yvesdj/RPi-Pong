@@ -91,15 +91,42 @@ def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
 
 def moveBall(ball, velocityX, velocityY):
-   ball.x += velocityX
-   ball.y += velocityY
+    ball.x += velocityX
+    ball.y += velocityY
 
-def updateBallPos(ball, refreshTime):
-   moveBall(ball, 5, 5)
+def updateBallPos(ball, ballSpeed, refreshTime):
+    global fBallGoingDown, fBallGoingRight, fieldHeight, fieldWidth 
+    vX, vY = 0, 0
 
-   client.publish(topic, payload="SRC=ENG; DST=DISPL; BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y) + ";")
-   
-   sleep(refreshTime)
+    if fBallGoingDown == True:
+        if ball.y < fieldHeight:
+            vY = ballSpeed
+        else:
+            fBallGoingDown = False
+
+    if fBallGoingDown == False:
+        if ball.y > 0:
+            vY = -ballSpeed
+        else:
+            fBallGoingDown = True
+
+    if fBallGoingRight == True:
+        if ball.x < fieldWidth:
+            vX = ballSpeed
+        else:
+            fBallGoingRight = False
+
+    if fBallGoingRight == False:
+        if ball.x > 0:
+            vX = -ballSpeed
+        else:
+            fBallGoingRight = True
+
+    moveBall(ball, vX, vY)
+
+    client.publish(topic, payload="SRC=ENG; DST=DISPL; BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y) + ";")
+
+    sleep(refreshTime)
 
 
 if __name__ == "__main__":
@@ -118,7 +145,8 @@ if __name__ == "__main__":
    fieldWidth, fieldHeight = 800, 600
 
    ball = Ball(390, 410, 10)
-   fBallGoingUp = False
+   fBallGoingDown = True
+   fBallGoingRight = True
 
 
    #try om het correct af te kunnen afsluiten
@@ -134,7 +162,7 @@ if __name__ == "__main__":
       # client.loop_forever()
 
       while(True):
-         updateBallPos(ball, 0.5)
+         updateBallPos(ball, 10, 0.5)
 
    #cleanup
    except KeyboardInterrupt: 
