@@ -94,12 +94,12 @@ def moveBall(ball, velocityX, velocityY):
     ball.x += velocityX
     ball.y += velocityY
 
-def updateBallPos(ball, ballSpeed, refreshTime):
+def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
     global fBallGoingDown, fBallGoingRight, fieldHeight, fieldWidth 
     vX, vY = 0, 0
 
     if fBallGoingDown == True:
-        if ball.y < fieldHeight:
+        if ball.y < fieldHeight - ball.size:
             vY = ballSpeed
         else:
             fBallGoingDown = False
@@ -111,7 +111,7 @@ def updateBallPos(ball, ballSpeed, refreshTime):
             fBallGoingDown = True
 
     if fBallGoingRight == True:
-        if ball.x < fieldWidth:
+        if ball.x < fieldWidth - ball.size:
             vX = ballSpeed
         else:
             fBallGoingRight = False
