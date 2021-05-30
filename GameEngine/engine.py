@@ -23,6 +23,18 @@ def on_subscribe(client, userdata, mid, granted_qos):
 def sendMessage(source:str, destination:str, message:str):
     client.publish(topic, payload="SRC="+source+"; DST="+destination+"; "+message+";",qos=0)
 
+#wijs een random paddle toe aan de spelers
+def assignPaddles():
+        random = random.randint(0,1)
+        if random:
+            player1.paddle = paddle1
+            player2.paddle = paddle2
+        else:
+            player1.paddle = paddle2
+            player2.paddle = paddle1
+
+        for i,player in enumerate(players,start=1):
+            sendMessage("ENG","CTRL"+str(i),"ASSIGNED_RACKET="+player.paddle.side)
 
 #actie bij detecteren van een bericht
 def on_message(client, userdata, msg):
@@ -38,7 +50,7 @@ def on_message(client, userdata, msg):
         findInLoadForPlayer(load, players[p])
         sendMessage("ENG","DISP","RACKET="+players[p].paddle.side+"; HEIGHT=" + str(players[p].paddle.y))
 
-    #nieuw spel beginnen
+    #nieuw spel beginnen                    
     elif load.find("MSG=STARTGAME") != -1:
         for player in players:
             player.score = 0
@@ -90,26 +102,20 @@ def findInLoadForPlayer(load: str, player: Player):
         print("Couldn't resolve message: " + load)
 
 
-def startNew():
+def endRound():
     global rondes
 
     #nieuwe ronde starten
     if rondes < 10:
         rondes += 1
-        #wijs paddle op scherm toe aan random speler
-        random = random.randint(0,1)
-        if random:
-            player1.paddle = paddle1
-            player2.paddle = paddle2
-        else:
-            player1.paddle = paddle2
-            player2.paddle = paddle1
-        
+        #TODO assign paddle
         sendMessage("ENG","ALL","MSG=NEWROUND")
+        return False
         
     #spel beïndigen
     else:
         sendMessage("ENG","DISPL","MSG=ENDGAME")
+        return True
 
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
@@ -158,7 +164,6 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
         goalside = "R"
         
     sleep(refreshTime)
-    
     return goalside 
 
 
