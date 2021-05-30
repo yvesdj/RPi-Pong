@@ -124,10 +124,22 @@ def moveBall(ball, velocityX, velocityY):
     ball.y += velocityY
 
 def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
-    #TODO Bal moet nog tegen paddles kunnen botsen
     global fBallGoingDown, fBallGoingRight, fieldHeight, fieldWidth
     vX, vY = 0, 0
+    
     goal = "N/A"
+    for player in players:
+        Xtouch,Ytouch = False,False
+        for paddleX range(player.paddle.x, player.paddle.x+player.paddle.width)
+            if bal.x == paddleX:
+                Xtouch = True
+            if bal.y == paddleY:
+                Ytouch = True
+            #bal raakt en paddle en keert terug + geeft punt aan speler
+            if Xtouch and Ytouch:
+                player.tmpScore += 5
+                fBallGoingRight = !BallGoingRight
+                break
 
     if fBallGoingDown == True:
         if ball.y < fieldHeight - ball.size:
@@ -150,7 +162,7 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
             #goal aan de rechter kant
             goal = "R"
 
-    if fBallGoingRight == False:
+    if fBallGoingRight == False:            
         if ball.x > 0:
             vX = -ballSpeed
         else:
