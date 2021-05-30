@@ -156,10 +156,17 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
     moveBall(ball, vX, vY)
 
     sendMessage("ENG","DISPL","BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y))
-    
-    sleep(refreshTime)
 
-    return "N/A" #TODO kijk na of er een punt wordt gescoord en stuur "L" of "R" door voor de kant waar de goal gescoord is
+    goalside = "N/A"
+
+    #TODO kijk na of er een punt wordt gescoord en stuur "L" of "R" door voor de kant waar de goal gescoord is
+    if false:
+        goalside = "L"
+        goalside = "R"
+        
+    sleep(refreshTime)
+    
+    return goalside 
 
 
 if __name__ == "__main__":
