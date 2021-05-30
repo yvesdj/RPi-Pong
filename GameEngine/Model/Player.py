@@ -2,6 +2,7 @@ from Model.Paddle import Paddle
 
 
 class Player:
-    def __init__(self, paddle: Paddle, score: int):
+    def __init__(self, paddle: Paddle, score: int, tmpScore):
         self.paddle = paddle
         self.score = score
+        self.tmpScore = tmpScore

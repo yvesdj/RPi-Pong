@@ -56,22 +56,22 @@ def findInLoadForPlayer(load: str, player: Player):
             player.paddle.y = fieldHeight
 
     elif load.find("ACTION=SP") != -1:
-        print(player.paddle.isSpeedMax)
-        if player.paddle.speed < speedMax and not player.paddle.isSpeedMax:
+        print(player.paddle.decrementSpeed)
+        if player.paddle.speed < speedMax and not player.paddle.decrementSpeed:
             player.paddle.speed += speedIncrement
             print("player 1 speed increased to: " + str(player.paddle.speed))
 
-        elif player.paddle.speed > speedMax and not player.paddle.isSpeedMax:
+        elif player.paddle.speed > speedMax and not player.paddle.decrementSpeed:
             player.paddle.speed = speedMax
-            player.paddle.isSpeedMax = True
+            player.paddle.decrementSpeed = True
 
-        elif player.paddle.speed > 5 and player.paddle.isSpeedMax:
+        elif player.paddle.speed > 5 and player.paddle.decrementSpeed:
             player.paddle.speed -= speedIncrement
             print("player 1 speed decreased to: " + str(player.paddle.speed))
 
         else:
             player.paddle.speed = 5
-            player.paddle.isSpeedMax = False
+            player.paddle.decrementSpeed = False
 
 
 def StartNew(winner = "N/A"):
@@ -153,9 +153,6 @@ if __name__ == "__main__":
     speedL,speedR=1,1
 
     rondes=0
-    puntenL,puntenR=0,0
-
-    # puntenLT,puntenRT=0,0
 
     speedMax,speedIncrement = 15,5
 
