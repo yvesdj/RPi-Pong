@@ -90,15 +90,8 @@ def findInLoadForPlayer(load: str, player: Player):
         print("Couldn't resolve message: " + load)
 
 
-def startNew(winner = "N/A"):
+def startNew():
     global rondes
-    
-    #als het niet de eerste ronde is en er dus een winnaar is
-    if winner != "N/A":
-        winner.score += winner.tmpScore
-        for player in players:
-            player.tmpScore = 0
-            sendMessage("ENG","DISP","RACKET="+player.paddle.side+"TMPSCR=0")
 
     #nieuwe ronde starten
     if rondes < 10:
@@ -210,13 +203,15 @@ if __name__ == "__main__":
         while(goal == "N/A"):
             goalSide = updateBallPos(ball, 10, 0.5)
         
-        winner = "N/A"
         for player in players
             if player.paddle.side != goalSide:
-                winner
+                player.score += player.tmpScore
+            for player in players:
+                player.tmpScore = 0
+                sendMessage("ENG","DISP","RACKET="+player.paddle.side+"TMPSCR=0")
             
             
-        startNew(winner)
+        startNew()
             
 
     #cleanup
