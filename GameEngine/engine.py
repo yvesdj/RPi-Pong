@@ -2,9 +2,8 @@ from Model.Player import Player
 from Model.Paddle import Paddle
 from Model.Ball import Ball
 import paho.mqtt.client as mqtt
-# import RPi.GPIO as GPIO
+import random
 from time import sleep
-# GPIO.setmode(GPIO.BCM)
 
 
 
@@ -90,7 +89,8 @@ def findInLoadForPlayer(load: str, player: Player):
     else:
         print("Couldn't resolve message: " + load)
 
-def StartNew(winner = "N/A"):
+
+def startNew(winner = "N/A"):
     global rondes
     
     #als het niet de eerste ronde is en er dus een winnaar is
@@ -98,19 +98,20 @@ def StartNew(winner = "N/A"):
         winner.score += winner.tmpScore
         for player in players:
             player.tmpScore = 0
+            sendMessage("ENG","DISP","RACKET="+player.paddle.side+"TMPSCR=0")
 
     #nieuwe ronde starten
     if rondes < 10:
         rondes += 1
         #wijs paddle op scherm toe aan random speler
-        #TODO genereer random bool random
-        random = true
+        random = random.randint(0,1)
         if random:
             player1.paddle = paddle1
             player2.paddle = paddle2
         else:
             player1.paddle = paddle2
             player2.paddle = paddle1
+        
         sendMessage("ENG","ALL","MSG=NEWROUND")
         
     #spel beïndigen
@@ -158,6 +159,8 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
     
     sleep(refreshTime)
 
+    return "N/A" #TODO kijk na of er een punt wordt gescoord en stuur "L" of "R" door voor de kant waar de goal gescoord is
+
 
 if __name__ == "__main__":
     #MQTT instellen
@@ -179,7 +182,6 @@ if __name__ == "__main__":
     player2 = Player(paddle2, 0)
     players = (player1, player2)
 
-
     ball = Ball(390, 410, 10)
     fBallGoingDown = True
     fBallGoingRight = True
@@ -196,9 +198,19 @@ if __name__ == "__main__":
 
         client.loop_start()
         # client.loop_forever()
-
-        while(True):
-            updateBallPos(ball, 10, 0.5)
+        
+        goalSide = "N/A"
+        while(goal == "N/A"):
+            goalSide = updateBallPos(ball, 10, 0.5)
+        
+        winner = "N/A"
+        for player in players
+            if player.paddle.side != goalSide:
+                winner
+            
+            
+        startNew(winner)
+            
 
     #cleanup
     except KeyboardInterrupt: 
