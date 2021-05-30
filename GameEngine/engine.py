@@ -30,12 +30,11 @@ def on_message(client, userdata, msg):
     load = str(msg.payload)
     if load.find("SRC=CTRL1") != -1:
         findInLoadForPlayer(load, player1)
-
-        client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=L; HEIGHT=" + str(player1.paddle.y) + ";",qos=0)
+        sendMessage("ENG","DISP","RACKET=R; HEIGHT=" + str(player1.paddle.y))
 
     elif load.find("SRC=CTRL2") != -1:
         findInLoadForPlayer(load, player2)
-        client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(player2.paddle.y) + ";",qos=0)
+        sendMessage("ENG","DISP","RACKET=R; HEIGHT=" + str(player2.paddle.y))
 
     #nieuw spel beginnen
     elif load.find("MSG=STARTGAME") != -1:
@@ -46,10 +45,13 @@ def on_message(client, userdata, msg):
             player.paddle.y = 10
         rondes = 0
         #TODO stuur bovenstaande data ook naar DISP
-        client.publish(topic, payload="SRC=ENG; DST=ALL; MSG=NEWGAME;",qos=0)
+        sendMessage("ENG","ALL","MSG=NEWGAME")
         
     else:
         print("Couldn't resolve message: " + load)
+
+def sendMessage(source:str, destination:str, message:str):
+    client.publish(topic, payload="SRC="+source+"; DST="+destination+"; "+message+";",qos=0)
 
 def findInLoadForPlayer(load: str, player: Player):
     if load.find("ACTION=UP") != -1:
@@ -104,11 +106,11 @@ def StartNew(winner = "N/A"):
         else:
             player1.paddle = paddle2
             player2.paddle = paddle1
-        client.publish(topic, payload="SRC=ENG; DST=ALL; MSG=NEWROUND;",qos=0)
+        sendMessage("ENG","ALL","MSG=NEWROUND")
         
     #spel beïndigen
     else:
-        client.publish(topic, payload="SRC=ENG; DST=DISPL; MSG=ENDGAME;",qos=0)
+        sendMessage("ENG","DISPL","MSG=ENDGAME")
 
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
@@ -147,8 +149,8 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
 
     moveBall(ball, vX, vY)
 
-    client.publish(topic, payload="SRC=ENG; DST=DISPL; BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y) + ";")
-
+    sendMessage("ENG","DISPL","BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y))
+    
     sleep(refreshTime)
 
 
