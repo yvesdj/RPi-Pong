@@ -24,8 +24,6 @@ def on_subscribe(client, userdata, mid, granted_qos):
 #actie bij detecteren van een bericht
 def on_message(client, userdata, msg):
     global player1, player2
-    global heightL, heightR, puntenL, puntenR
-    global puntenLT, puntenRT, speedL, speedR
     global rondes, speedMax, speedIncrement
     global fieldWidth, fieldHeight
 
@@ -39,6 +37,17 @@ def on_message(client, userdata, msg):
         findInLoadForPlayer(load, player2)
         client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(player2.paddle.y) + ";",qos=0)
 
+    #nieuw spel beginnen
+    elif load.find("MSG=STARTGAME") != -1:
+        for player in players:
+            player.score = 0
+            player.tmpScore = 0
+            player.paddle.speed = 5
+            player.paddle.y = 10
+        rondes = 0
+        #TODO stuur bovenstaande data ook naar DISP
+        client.publish(topic, payload="SRC=ENG; DST=ALL; MSG=NEWGAME;",qos=0)
+        
     else:
         print("Couldn't resolve message: " + load)
 
@@ -76,29 +85,30 @@ def findInLoadForPlayer(load: str, player: Player):
 
 def StartNew(winner = "N/A"):
     global rondes
+    
+    #als het niet de eerste ronde is en er dus een winnaar is
     if winner != "N/A":
-        #TODO voeg tmp punten van winner toe aan zijn perm punten
-        puntenLT = 0
-        puntenRT = 0
-        
+        winner.score += winner.tmpScore
+        for player in players:
+            player.tmpScore = 0
+
+    #nieuwe ronde starten
     if rondes < 10:
         rondes += 1
-        #TODO Wijs kant (L/R) toe aan elke conroller
-        #TODO Stuur bericht naar controllers en display dat nieuwe ronde begint
+        #wijs paddle op scherm toe aan random speler
+        #TODO genereer random bool random
+        random = true
+        if random:
+            player1.paddle = paddle1
+            player2.paddle = paddle2
+        else:
+            player1.paddle = paddle2
+            player2.paddle = paddle1
+        client.publish(topic, payload="SRC=ENG; DST=ALL; MSG=NEWROUND;",qos=0)
         
+    #spel beïndigen
     else:
-        #spel beïndigd
-        #TODO stuur bericht naar display dat het spel is Geëindigd
-        #TODO wacht op een reply van een display
-        puntenL = 0
-        puntenR = 0
-        puntenLT = 0
-        puntenRT = 0
-        rondes = 0
-        speedR = 1
-        speedL = 1
-        heightR = 10
-        heightL = 10   
+        client.publish(topic, payload="SRC=ENG; DST=DISPL; MSG=ENDGAME;",qos=0)
 
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
@@ -149,9 +159,6 @@ if __name__ == "__main__":
     broker = "broker.mqttdashboard.com" # "87.67.133.107"
     topic = "TeamCL1-4/Pong"
 
-    heightL,heightR=10,10
-    speedL,speedR=1,1
-
     rondes=0
 
     speedMax,speedIncrement = 15,5
@@ -163,6 +170,7 @@ if __name__ == "__main__":
 
     player1 = Player(paddle1, 0)
     player2 = Player(paddle2, 0)
+    players = (player1, player2)
 
 
     ball = Ball(390, 410, 10)
