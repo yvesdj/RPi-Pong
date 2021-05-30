@@ -108,7 +108,6 @@ def endRound():
     #nieuwe ronde starten
     if rondes < 10:
         rondes += 1
-        #TODO assign paddle
         sendMessage("ENG","ALL","MSG=NEWROUND")
         return False
         
@@ -125,8 +124,10 @@ def moveBall(ball, velocityX, velocityY):
     ball.y += velocityY
 
 def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
-    global fBallGoingDown, fBallGoingRight, fieldHeight, fieldWidth 
+    #TODO Bal moet nog tegen paddles kunnen botsen
+    global fBallGoingDown, fBallGoingRight, fieldHeight, fieldWidth
     vX, vY = 0, 0
+    goal = "N/A"
 
     if fBallGoingDown == True:
         if ball.y < fieldHeight - ball.size:
@@ -144,27 +145,26 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
         if ball.x < fieldWidth - ball.size:
             vX = ballSpeed
         else:
-            fBallGoingRight = False
+            #TODO kijk na
+            #fBallGoingRight = False niet nodig, want de ronde is over
+            #goal aan de rechter kant
+            goal = "R"
 
     if fBallGoingRight == False:
         if ball.x > 0:
             vX = -ballSpeed
         else:
-            fBallGoingRight = True
+            #TODO kijk na
+            #fBallGoingRight = True niet nodig, want de ronde is over
+            #goal aan de linker kant
+            goal = "L"
 
     moveBall(ball, vX, vY)
 
     sendMessage("ENG","DISPL","BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y))
 
-    goalside = "N/A"
-
-    #TODO kijk na of er een punt wordt gescoord en stuur "L" of "R" door voor de kant waar de goal gescoord is
-    if false:
-        goalside = "L"
-        goalside = "R"
-        
     sleep(refreshTime)
-    return goalside 
+    return goal 
 
 
 if __name__ == "__main__":
