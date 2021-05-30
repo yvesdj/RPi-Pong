@@ -47,6 +47,7 @@ def on_message(client, userdata, msg):
 #actie bij detecteren van een bericht
     global rounds, speedMax, speedIncrement
     global fieldWidth, fieldHeight
+    global newGame
 
     load = str(msg.payload)
     
@@ -68,6 +69,7 @@ def on_message(client, userdata, msg):
         for msg in configMessages:
             sendMessage("ENG","DISP",msg)
         sendMessage("ENG","ALL","MSG=NEWGAME")
+        newGame = True
         
     else:
         print("Couldn't resolve message: " + load)
@@ -215,7 +217,7 @@ if __name__ == "__main__":
         endGame = False
         
         #gameloop
-        while (!endGame):
+        while (True):
             assignPaddles()
             goalSide = "N/A"
             
@@ -232,6 +234,12 @@ if __name__ == "__main__":
                 sendMessage("ENG","DISP","RACKET="+player.paddle.side+"TMPSCR=0")
             
             endGame = endRound()
+            while (endGame):
+                #TODO niet zeker of dit werkt
+                #het zou misschien kunnen lukken zonder de if
+                #wachten op startgame message van display
+                if newGame:
+                    endGame = False
             
 
     #afsluiten
