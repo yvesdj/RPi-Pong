@@ -31,59 +31,47 @@ def on_message(client, userdata, msg):
 
     load = str(msg.payload)
     if load.find("SRC=CTRL1") != -1:
-        if load.find("ACTION=UP") != -1:
-            if player1.paddle.y > 0:
-                player1.paddle.y -= player1.paddle.speed
-            else:
-                player1.paddle.y = 0
-            # if heightL < 0:
-            #     heightL = 0
-        elif load.find("ACTION=DN") != -1:
-            if player1.paddle.y < fieldHeight:
-                player1.paddle.y += player1.paddle.speed
-            else:
-                player1.paddle.y = fieldHeight
-            # if heightL > fieldHeight:
-            #     heightL = fieldHeight
-        elif load.find("ACTION=SP") != -1:
-            fSpeedMax = False
-            if player1.paddle.speed < speedMax and not fSpeedMax:
-                player1.paddle.speed += speedIncrement
-            else:
-                player1.paddle.speed = speedMax
-                fSpeedMax = True
+        findInLoadForPlayer(load, player1)
 
-            if player1.paddle.speed > 5 and fSpeedMax:
-                player1.paddle.speed -= speedIncrement
-            else:
-                player1.paddle.speed = 5
-                fSpeedMax = False
-
-            print(player1.paddle.speed)
-            # if speedL < speedMax:
-            #     speedL += speedIncrement
-            # else:
-            #     speedL = speedIncrement
         client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=L; HEIGHT=" + str(player1.paddle.y) + ";",qos=0)
 
     elif load.find("SRC=CTRL2") != -1:
-        if load.find("ACTION=UP") != -1:
-            heightR -= speedR
-            if heightR < 0:
-                heightR = 0
-        elif load.find("ACTION=DN") != -1:
-            heightR += speedR
-            if heightR > fieldHeight:
-                heightR = fieldHeight
-        elif load.find("ACTION=SP") != -1:
-            if speedR < speedMax:
-                speedR += speedIncrement
-            else:
-                speedR = speedIncrement
-        client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(heightR) + ";",qos=0)
+        findInLoadForPlayer(load, player2)
+        client.publish(topic, payload="SRC=ENG; DST=DISPL; RACKET=R; HEIGHT=" + str(player2.paddle.y) + ";",qos=0)
 
     else:
         print("Couldn't resolve message: " + load)
+
+def findInLoadForPlayer(load: str, player: Player):
+    if load.find("ACTION=UP") != -1:
+        if player.paddle.y > 0:
+            player.paddle.y -= player.paddle.speed
+        else:
+            player.paddle.y = 0
+
+    elif load.find("ACTION=DN") != -1:
+        if player.paddle.y < fieldHeight:
+            player.paddle.y += player.paddle.speed
+        else:
+            player.paddle.y = fieldHeight
+
+    elif load.find("ACTION=SP") != -1:
+        print(player.paddle.isSpeedMax)
+        if player.paddle.speed < speedMax and not player.paddle.isSpeedMax:
+            player.paddle.speed += speedIncrement
+            print("player 1 speed increased to: " + str(player.paddle.speed))
+
+        elif player.paddle.speed > speedMax and not player.paddle.isSpeedMax:
+            player.paddle.speed = speedMax
+            player.paddle.isSpeedMax = True
+
+        elif player.paddle.speed > 5 and player.paddle.isSpeedMax:
+            player.paddle.speed -= speedIncrement
+            print("player 1 speed decreased to: " + str(player.paddle.speed))
+
+        else:
+            player.paddle.speed = 5
+            player.paddle.isSpeedMax = False
 
 
 def StartNew(winner = "N/A"):
@@ -173,8 +161,8 @@ if __name__ == "__main__":
 
     fieldWidth, fieldHeight = 800, 600
 
-    paddle1 = Paddle(10, 10, 10, 100, 5)
-    paddle2 = Paddle(10, 10, 10, 100, 5)
+    paddle1 = Paddle(10, 10, 10, 100, 5, False)
+    paddle2 = Paddle(10, 10, 10, 100, 5, False)
 
     player1 = Player(paddle1, 0)
     player2 = Player(paddle2, 0)
