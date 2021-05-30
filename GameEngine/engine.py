@@ -6,7 +6,6 @@ import random
 from time import sleep
 
 
-
 #verbinding maken met het topic
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -20,11 +19,17 @@ def on_subscribe(client, userdata, mid, granted_qos):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
+def on_publish(client, userdata, mid):
+    print("mid: " + str(mid))
+    
+
 def sendMessage(source:str, destination:str, message:str):
     client.publish(topic, payload="SRC="+source+"; DST="+destination+"; "+message+";",qos=0)
 
-#wijs een random paddle toe aan de spelers
+
+
 def assignPaddles():
+#wijs een random paddle toe aan de spelers
         random = random.randint(0,1)
         if random:
             player1.paddle = paddle1
@@ -36,10 +41,11 @@ def assignPaddles():
         for i,player in enumerate(players,start=1):
             sendMessage("ENG","CTRL"+str(i),"ASSIGNED_RACKET="+player.paddle.side)
 
-#actie bij detecteren van een bericht
+
+
 def on_message(client, userdata, msg):
-    global player1, player2
-    global rondes, speedMax, speedIncrement
+#actie bij detecteren van een bericht
+    global rounds, speedMax, speedIncrement
     global fieldWidth, fieldHeight
 
     load = str(msg.payload)
@@ -57,7 +63,7 @@ def on_message(client, userdata, msg):
             player.tmpScore = 0
             player.paddle.speed = 5
             player.paddle.y = 10
-        rondes = 0
+        rounds = 0
         configMessages("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=L; ","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0","RACKET=R; ")
         for msg in configMessages:
             sendMessage("ENG","DISP",msg)
@@ -68,6 +74,7 @@ def on_message(client, userdata, msg):
 
 
 def findInLoadForPlayer(load: str, player: Player):
+#inkomend bericht van een CTRL onderzoeken
     if load.find("ACTION=UP") != -1:
         if player.paddle.y > 0:
             player.paddle.y -= player.paddle.speed
@@ -103,11 +110,10 @@ def findInLoadForPlayer(load: str, player: Player):
 
 
 def endRound():
-    global rondes
-
+    global rounds
     #nieuwe ronde starten
-    if rondes < 10:
-        rondes += 1
+    if rounds < 10:
+        rounds += 1
         sendMessage("ENG","ALL","MSG=NEWROUND")
         return False
         
@@ -116,12 +122,11 @@ def endRound():
         sendMessage("ENG","DISPL","MSG=ENDGAME")
         return True
 
-def on_publish(client, userdata, mid):
-    print("mid: " + str(mid))
 
 def moveBall(ball, velocityX, velocityY):
     ball.x += velocityX
     ball.y += velocityY
+
 
 def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
     global fBallGoingDown, fBallGoingRight, fieldHeight, fieldWidth
@@ -172,9 +177,7 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
             goal = "L"
 
     moveBall(ball, vX, vY)
-
     sendMessage("ENG","DISPL","BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y))
-
     sleep(refreshTime)
     return goal 
 
@@ -182,23 +185,18 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
 if __name__ == "__main__":
     #MQTT instellen
     client = mqtt.Client()
+    
     #variabelen
     broker = "broker.mqttdashboard.com" # "87.67.133.107"
     topic = "TeamCL1-4/Pong"
-
-    rondes=0
-
+    rounds=0
     speedMax,speedIncrement = 15,5
-
     fieldWidth, fieldHeight = 800, 600
-
     paddle1 = Paddle("L", 10, 10, 20, 90, 5, False)
     paddle2 = Paddle("R", 770, 10, 20, 90, 5, False)
-
     player1 = Player(paddle1, 0)
     player2 = Player(paddle2, 0)
     players = (player1, player2)
-
     ball = Ball(390, 410, 10)
     fBallGoingDown = True
     fBallGoingRight = True
@@ -210,19 +208,22 @@ if __name__ == "__main__":
         client.on_subscribe = on_subscribe
         client.on_message = on_message
         client.on_publish = on_publish
-
         client.connect(broker, 1883)
 
         client.loop_start()
-        # client.loop_forever()
-        
+        #client.loop_forever()
         endGame = False
+        
+        #gameloop
         while (!endGame):
             assignPaddles()
             goalSide = "N/A"
+            
+            #roundloop
             while(goalSide == "N/A"):
                 goalSide = updateBallPos(ball, 10, 0.5)
-        
+
+            #goal is gemaakt
             for player in players:
                 if player.paddle.side != goalSide:
                     player.score += player.tmpScore
@@ -233,7 +234,7 @@ if __name__ == "__main__":
             endGame = endRound()
             
 
-    #cleanup
+    #afsluiten
     except KeyboardInterrupt: 
         print("\nGame engine wordt afgesloten.")
 
