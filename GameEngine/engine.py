@@ -21,6 +21,10 @@ def on_subscribe(client, userdata, mid, granted_qos):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
+def sendMessage(source:str, destination:str, message:str):
+    client.publish(topic, payload="SRC="+source+"; DST="+destination+"; "+message+";",qos=0)
+
+
 #actie bij detecteren van een bericht
 def on_message(client, userdata, msg):
     global player1, player2
@@ -28,13 +32,12 @@ def on_message(client, userdata, msg):
     global fieldWidth, fieldHeight
 
     load = str(msg.payload)
-    if load.find("SRC=CTRL1") != -1:
-        findInLoadForPlayer(load, player1)
-        sendMessage("ENG","DISP","RACKET=R; HEIGHT=" + str(player1.paddle.y))
-
-    elif load.find("SRC=CTRL2") != -1:
-        findInLoadForPlayer(load, player2)
-        sendMessage("ENG","DISP","RACKET=R; HEIGHT=" + str(player2.paddle.y))
+    
+    SRCindex = load.find("SRC=CTRL")
+    if SRCindex != -1:
+        p = load[SRCindex+8:SRCindex+9]
+        findInLoadForPlayer(load, players[p])
+        sendMessage("ENG","DISP","RACKET="+players[p].paddle.side+"; HEIGHT=" + str(players[p].paddle.y))
 
     #nieuw spel beginnen
     elif load.find("MSG=STARTGAME") != -1:
@@ -44,14 +47,14 @@ def on_message(client, userdata, msg):
             player.paddle.speed = 5
             player.paddle.y = 10
         rondes = 0
-        #TODO stuur bovenstaande data ook naar DISP
+        configMessages("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=L; ","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0","RACKET=R; ")
+        for msg in configMessages:
+            sendMessage("ENG","DISP",msg)
         sendMessage("ENG","ALL","MSG=NEWGAME")
         
     else:
         print("Couldn't resolve message: " + load)
 
-def sendMessage(source:str, destination:str, message:str):
-    client.publish(topic, payload="SRC="+source+"; DST="+destination+"; "+message+";",qos=0)
 
 def findInLoadForPlayer(load: str, player: Player):
     if load.find("ACTION=UP") != -1:
@@ -83,7 +86,9 @@ def findInLoadForPlayer(load: str, player: Player):
         else:
             player.paddle.speed = 5
             player.paddle.decrementSpeed = False
-
+            
+    else:
+        print("Couldn't resolve message: " + load)
 
 def StartNew(winner = "N/A"):
     global rondes
@@ -167,8 +172,8 @@ if __name__ == "__main__":
 
     fieldWidth, fieldHeight = 800, 600
 
-    paddle1 = Paddle(10, 10, 10, 100, 5, False)
-    paddle2 = Paddle(10, 10, 10, 100, 5, False)
+    paddle1 = Paddle("L", 10, 10, 20, 90, 5, False)
+    paddle2 = Paddle("R", 770, 10, 20, 90, 5, False)
 
     player1 = Player(paddle1, 0)
     player2 = Player(paddle2, 0)
