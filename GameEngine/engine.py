@@ -204,22 +204,24 @@ if __name__ == "__main__":
         client.loop_start()
         # client.loop_forever()
         
-        goalSide = "N/A"
-        while(goal == "N/A"):
-            goalSide = updateBallPos(ball, 10, 0.5)
+        endGame = False
+        while (!endGame):
+            assignPaddles()
+            goalSide = "N/A"
+            while(goalSide == "N/A"):
+                goalSide = updateBallPos(ball, 10, 0.5)
         
-        for player in players
-            if player.paddle.side != goalSide:
-                player.score += player.tmpScore
             for player in players:
+                if player.paddle.side != goalSide:
+                    player.score += player.tmpScore
+                    sendMessage("ENG","DISP","RACKET="+player.paddle.side+"SCORE="+player.score)
                 player.tmpScore = 0
                 sendMessage("ENG","DISP","RACKET="+player.paddle.side+"TMPSCR=0")
             
-            
-        startNew()
+            endGame = endRound()
             
 
     #cleanup
     except KeyboardInterrupt: 
-        print("\nStopping this script.")
+        print("\nGame engine wordt afgesloten.")
 
