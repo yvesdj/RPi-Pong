@@ -61,6 +61,8 @@ def on_message(client, userdata, msg):
             
             print(str(player1.paddle.y) + "\n" + str(player2.paddle.y))
 
+        elif load.find("MSG=REFRESHMENU;"):
+            startGame()
 
 
 
@@ -70,13 +72,6 @@ def on_message(client, userdata, msg):
 
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
-
-
-
-
-
-def startRound():
-    client.publish(topic, payload="SRC=DISPL; DST=ENG; MSG=STARTGAME;", qos=0)
 
 def updatePlayerScore(canvas: Canvas, player: Player, scoreID, tmpScoreID):
     canvas.itemconfigure(scoreID, text=player.score)
@@ -100,6 +95,11 @@ def clearScreen():
     wFrame.destroy()
     wFrame = Frame(window)
     wFrame.pack()
+
+def startButtonPressed:
+    client.publish(topic, payload="SRC=DISPL; DST=ENG; MSG=STARTGAME;", qos=0)
+    client.publish(topic, payload="SRC=DISPL; DST=DISPL; MSG=REFRESHMENU;", qos=0)
+    
 
 def startGame():
     global wFrame, window, fGameStarted
@@ -129,8 +129,6 @@ def startGame():
 
     cnv.pack(fill=BOTH, expand=1)
     fGameStarted = True
-
-    startRound()
     updatePlayerScore(cnv, player1, punten1, tmpPunten1)
     updatePlayerScore(cnv, player2, punten2, tmpPunten2)
     updateBallPos(cnv, ballTexture)
@@ -164,7 +162,7 @@ if __name__ == "__main__":
     cnv = Canvas(wFrame, width=200, height=150)
     cnv.pack()
 
-    btn = Button(wFrame, text="Play Game!", command=startGame)
+    btn = Button(wFrame, text="Play Game!", command=startButtonPressed)
     btn.pack()
 
     wFrame.pack()
