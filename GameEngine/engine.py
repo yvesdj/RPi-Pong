@@ -55,7 +55,7 @@ def on_message(client, userdata, msg):
     if SRCindex != -1:
         p = int(load[SRCindex+8:SRCindex+9])
         findInLoadForPlayer(load, players[p])
-        sendMessage("ENG","DISP","RACKET=" + players[p].paddle.side+"; HEIGHT=" + str(players[p].paddle.y))
+        sendMessage("ENG","DISPL","RACKET=" + players[p].paddle.side+"; HEIGHT=" + str(players[p].paddle.y))
 
     #nieuw spel beginnen                    
     elif load.find("MSG=STARTGAME") != -1:
@@ -67,7 +67,7 @@ def on_message(client, userdata, msg):
         rounds = 0
         configMessages = ("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=L; ","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0","RACKET=R; ")
         for msg in configMessages:
-            sendMessage("ENG","DISP",msg)
+            sendMessage("ENG","DISPL",msg)
         sendMessage("ENG","ALL","MSG=NEWGAME")
         newGame = True
         
@@ -237,9 +237,9 @@ if __name__ == "__main__":
             for player in players:
                 if player.paddle.side != goalSide:
                     player.score += player.tmpScore
-                    sendMessage("ENG","DISP","RACKET=" + player.paddle.side +"SCORE=" + str(player.score))
+                    sendMessage("ENG","DISPL","RACKET=" + player.paddle.side +"SCORE=" + str(player.score))
                 player.tmpScore = 0
-                sendMessage("ENG","DISP","RACKET=" + player.paddle.side +"TMPSCR=0")
+                sendMessage("ENG","DISPL","RACKET=" + player.paddle.side +"TMPSCR=0")
             
             endGame = endRound()
             while (endGame):

@@ -1,21 +1,23 @@
+from Model.Player import Player
+from Model.Paddle import Paddle
 from Model.Ball import Ball
 from tkinter import *
 import paho.mqtt.client as mqtt
 
 
 
-def extractVarValueFromString(message: str, searchVar: str, endNotation: str):
+def extractStrValueFromString(message: str, searchVar: str, endNotation: str) -> str:
     start = message.find(searchVar)
     end = message[start:].find(endNotation)
 
-    return int(message[start + len(searchVar) : start + end])
+    return message[start + len(searchVar) : start + end]
 
 def getBallPos(ball: Ball, message: str):
-    ball.x = extractVarValueFromString(message, "BALL_X=", ";")
-    ball.y = extractVarValueFromString(message, "BALL_Y=", ";")
+    ball.x = int(extractStrValueFromString(message, "BALL_X=", ";"))
+    ball.y = int(extractStrValueFromString(message, "BALL_Y=", ";"))
 
-def getPaddlePos():
-    print()
+def getPaddlePos(paddle: Paddle, message: str):
+    paddle.x = int(extractStrValueFromString(message, "HEIGHT=", ";"))
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code", rc)
@@ -32,7 +34,18 @@ def on_message(client, userdata, msg):
             global ball
             getBallPos(ball, load)
             # print(result)
-        # elif load.find()
+        elif load.find("RACKET") != -1:
+            if extractStrValueFromString(load, "RACKET=", ";") == "R":
+                getPaddlePos(player1.paddle, load)
+            elif extractStrValueFromString(load, "RACKET=", ";") == "L":
+                getPaddlePos(player2.paddle, load)
+            else:
+                print("Undefined Racket.")
+            
+            print(str(player1.paddle.x) + "\n" + str(player2.paddle.x))
+
+
+
 
 
     else:
@@ -66,10 +79,10 @@ def startGame():
     cnv = Canvas(wFrame, bg="#121212", width=800, height=600)
     midline = cnv.create_rectangle(395, 0, 405, 600, fill="#FFFFFF")
 
-    paddle1 = cnv.create_rectangle(10, 10, 30, 100, fill="red")
+    paddle1 = cnv.create_rectangle(10, 10, 30, 110, fill="red")
     # paddleBox1 = cnv.bbox(paddle1)
 
-    paddle2 = cnv.create_rectangle(770, 10, 790, 100, fill="blue")
+    paddle2 = cnv.create_rectangle(770, 10, 790, 110, fill="blue")
     # paddleBox2 = cnv.bbox(paddle2)
 
     ballTexture = cnv.create_rectangle(390, 290, 410, 310, fill="white")
@@ -93,6 +106,12 @@ def keypress(event):
 
 if __name__ == "__main__":
     ball = Ball(390, 410, 10)
+
+    paddleL = Paddle("L", 10, 10, 20, 100, 5, False)
+    paddleR = Paddle("R", 770, 10, 20, 100, 5, False)
+    player1 = Player(paddleL, 0, 0)
+    player2 = Player(paddleR, 0, 0)
+
 
     broker = "broker.mqttdashboard.com"
     topic = "TeamCL1-4/Pong"
