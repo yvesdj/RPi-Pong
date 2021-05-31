@@ -17,7 +17,7 @@ def getBallPos(ball: Ball, message: str):
     ball.y = int(extractStrValueFromString(message, "BALL_Y=", ";"))
 
 def getPaddlePos(paddle: Paddle, message: str):
-    paddle.x = int(extractStrValueFromString(message, "HEIGHT=", ";"))
+    paddle.y = int(extractStrValueFromString(message, "HEIGHT=", ";"))
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code", rc)
@@ -35,14 +35,14 @@ def on_message(client, userdata, msg):
             getBallPos(ball, load)
             # print(result)
         elif load.find("RACKET") != -1:
-            if extractStrValueFromString(load, "RACKET=", ";") == "R":
+            if extractStrValueFromString(load, "RACKET=", ";") == "L":
                 getPaddlePos(player1.paddle, load)
-            elif extractStrValueFromString(load, "RACKET=", ";") == "L":
+            elif extractStrValueFromString(load, "RACKET=", ";") == "R":
                 getPaddlePos(player2.paddle, load)
             else:
                 print("Undefined Racket.")
             
-            print(str(player1.paddle.x) + "\n" + str(player2.paddle.x))
+            print(str(player1.paddle.y) + "\n" + str(player2.paddle.y))
 
 
 

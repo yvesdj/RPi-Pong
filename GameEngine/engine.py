@@ -53,7 +53,7 @@ def on_message(client, userdata, msg):
     
     SRCindex = load.find("SRC=CTRL")
     if SRCindex != -1:
-        p = int(load[SRCindex+8:SRCindex+9])
+        p = int(load[SRCindex+8:SRCindex+9]) - 1
         findInLoadForPlayer(load, players[p])
         sendMessage("ENG","DISPL","RACKET=" + players[p].paddle.side+"; HEIGHT=" + str(players[p].paddle.y))
 
