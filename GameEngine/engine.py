@@ -115,7 +115,7 @@ def endRound():
     if rounds < 10:
         rounds += 1
         
-        sendMessage("ENG","ALL","MSG=NEWROUND")
+        sendMessage("ENG","ALL","MSG=NEWROUND; RND="+str(rounds))
         return False
         
     #spel beïndigen
