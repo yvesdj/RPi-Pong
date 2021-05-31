@@ -18,14 +18,11 @@ def on_connect(client, userdata, flags, rc):
 
 def on_subscribe(client, userdata, mid, granted_qos):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
-
-
-def on_publish(client, userdata, mid):
-    print("mid: " + str(mid))
     
 
 def sendMessage(source:str, destination:str, message:str):
     client.publish(topic, payload="SRC="+source+"; DST="+destination+"; "+message+";",qos=0)
+    print("Message sent:SRC="+source+"; DST="+destination+"; "+message+";")
 
 
 
@@ -48,7 +45,7 @@ def on_message(client, userdata, msg):
 #actie bij detecteren van een bericht
     global rounds, speedMax, speedIncrement
     global fieldWidth, fieldHeight
-    global newGame, roundStarted
+    global waitForStart
 
     load = str(msg.payload)
     
@@ -72,15 +69,11 @@ def on_message(client, userdata, msg):
 
 
         rounds = 0
-        configMessages = ("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=L; ","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0","RACKET=R; ")
+        configMessages = ("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0")
         for msg in configMessages:
             sendMessage("ENG","DISPL",msg)
         sendMessage("ENG","ALL","MSG=NEWGAME")
-        newGame = True
-        roundStarted = True
-        
-    else:
-        print("Couldn't resolve message: " + load)
+        waitForStart = False
 
 
 def findInLoadForPlayer(load: str, player: Player):
@@ -98,10 +91,8 @@ def findInLoadForPlayer(load: str, player: Player):
             player.paddle.y = fieldHeight
 
     elif load.find("ACTION=SP") != -1:
-        print(player.paddle.decrementSpeed)
         if player.paddle.speed < speedMax and not player.paddle.decrementSpeed:
             player.paddle.speed += speedIncrement
-            print("player 1 speed increased to: " + str(player.paddle.speed))
 
         elif player.paddle.speed > speedMax and not player.paddle.decrementSpeed:
             player.paddle.speed = speedMax
@@ -109,14 +100,10 @@ def findInLoadForPlayer(load: str, player: Player):
 
         elif player.paddle.speed > 5 and player.paddle.decrementSpeed:
             player.paddle.speed -= speedIncrement
-            print("player 1 speed decreased to: " + str(player.paddle.speed))
 
         else:
             player.paddle.speed = 5
             player.paddle.decrementSpeed = False
-            
-    else:
-        print("Couldn't resolve message: " + load)
 
 
 def endRound():
@@ -165,9 +152,6 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
         if ball.x < fieldWidth - ball.size:
             vX = ballSpeed
         else:
-            #TODO kijk na
-            #fBallGoingRight = False niet nodig, want de ronde is over
-            #goal aan de rechter kant
             goal = "R"
             print("\n\nScored R\n\n")
 
@@ -175,9 +159,6 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
         if ball.x > 0:
             vX = -ballSpeed
         else:
-            #TODO kijk na
-            #fBallGoingRight = True niet nodig, want de ronde is over
-            #goal aan de linker kant
             goal = "L"
             print("\n\nScored L\n\n")
 
@@ -205,7 +186,6 @@ def isBallCollisionWithPaddle(ball: Ball, paddle: Paddle) -> bool:
 def checkCollision(ball: Ball):
     global fBallGoingRight
     for player in players:
-        print(isBallCollisionWithPaddle(ball, player.paddle))
         if isBallCollisionWithPaddle(ball, player.paddle):
             print("\n\n COLLISION \n\n")
             player.tmpScore += 5
@@ -231,9 +211,9 @@ if __name__ == "__main__":
     ball = Ball(395, 405, 10)
     fBallGoingDown = True
     fBallGoingRight = True
-
-    roundStarted = False
-    newGame = False
+    waitForStart = True
+    endGame = False
+    
 
 
     #try om het correct af te kunnen afsluiten
@@ -241,21 +221,24 @@ if __name__ == "__main__":
         client.on_connect = on_connect
         client.on_subscribe = on_subscribe
         client.on_message = on_message
-        client.on_publish = on_publish
         client.connect(broker, 1883)
 
         client.loop_start()
         #client.loop_forever()
-        endGame = False
         
+        #wachten op display
+        while (waitForStart):
+            sleep(0.1)
+        else:
+            print("Game started")
         #gameloop
-        while (True):
+        while (not endGame):
             assignPaddles()
             goalSide = "N/A"
             
             #roundloop
-            while(goalSide == "N/A" and roundStarted):
-                goalSide = updateBallPos(ball, 15, 0.5)
+            while(goalSide == "N/A"):
+                goalSide = updateBallPos(ball, 9, 0.3)
 
             #goal is gemaakt
             for player in players:
@@ -266,12 +249,7 @@ if __name__ == "__main__":
                 sendMessage("ENG","DISPL","RACKET=" + player.paddle.side + "; " + "TMPSCR=0")
             
             endGame = endRound()
-            while (endGame):
-                #TODO niet zeker of dit werkt
-                #het zou misschien kunnen lukken zonder de if
-                #wachten op startgame message van display
-                if newGame:
-                    endGame = False
+            
             
 
     #afsluiten
