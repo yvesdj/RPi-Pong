@@ -169,6 +169,7 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
             #fBallGoingRight = False niet nodig, want de ronde is over
             #goal aan de rechter kant
             goal = "R"
+            print("\n\nScored R\n\n")
 
     if fBallGoingRight == False:            
         if ball.x > 0:
@@ -178,6 +179,8 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
             #fBallGoingRight = True niet nodig, want de ronde is over
             #goal aan de linker kant
             goal = "L"
+            print("\n\nScored L\n\n")
+
 
     moveBall(ball, vX, vY)
     sendMessage("ENG","DISPL","BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y))
@@ -206,6 +209,7 @@ def checkCollision(ball: Ball):
         if isBallCollisionWithPaddle(ball, player.paddle):
             print("\n\n COLLISION \n\n")
             player.tmpScore += 5
+            sendMessage("ENG","DISPL","RACKET=" + player.paddle.side + "; " + "TMPSCR=" + str(player.tmpScore))
             fBallGoingRight = not fBallGoingRight
 
 
@@ -251,7 +255,7 @@ if __name__ == "__main__":
             
             #roundloop
             while(goalSide == "N/A" and roundStarted):
-                goalSide = updateBallPos(ball, 10, 0.5)
+                goalSide = updateBallPos(ball, 15, 0.5)
 
             #goal is gemaakt
             for player in players:

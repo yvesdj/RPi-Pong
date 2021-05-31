@@ -15,6 +15,9 @@ def extractStrValueFromString(message: str, searchVar: str, endNotation: str) ->
     else:
         return "0"
 
+# def getPlayerTempScore(player: Player, message: str):
+#     player.tmpScore = int(extractStrValueFromString(message, "TMPSCR=", ";"))
+
 def getBallPos(ball: Ball, message: str):
     ball.x = int(extractStrValueFromString(message, "BALL_X=", ";"))
     ball.y = int(extractStrValueFromString(message, "BALL_Y=", ";"))
@@ -39,11 +42,20 @@ def on_message(client, userdata, msg):
             # print(result)
         elif load.find("RACKET") != -1:
             if extractStrValueFromString(load, "RACKET=", ";") == "L":
-                if load.find("HEIGHT"):
+                if load.find("HEIGHT") != -1:
                     getPaddlePos(player1.paddle, load)
+                elif load.find("TMPSCR") != -1:
+                    player1.tmpScore = int(extractStrValueFromString(load, "TMPSCR=", ";"))
+                elif load.find("SCORE") != -1:
+                    player1.score = int(extractStrValueFromString(load, "SCORE=", ";"))
+                
             elif extractStrValueFromString(load, "RACKET=", ";") == "R":
-                if load.find("HEIGHT"):
+                if load.find("HEIGHT") != -1:
                     getPaddlePos(player2.paddle, load)
+                elif load.find("TMPSCR") != -1:
+                    player2.tmpScore = int(extractStrValueFromString(load, "TMPSCR=", ";"))
+                elif load.find("SCORE") != -1:
+                    player2.score = int(extractStrValueFromString(load, "SCORE=", ";"))
             else:
                 print("Undefined Racket.")
             
@@ -66,6 +78,11 @@ def on_publish(client, userdata, mid):
 def startRound():
     client.publish(topic, payload="SRC=DISPL; DST=ENG; MSG=STARTGAME;", qos=0)
 
+def updatePlayerScore(canvas: Canvas, player: Player, scoreID, tmpScoreID):
+    canvas.itemconfigure(scoreID, text=player.score)
+    canvas.itemconfigure(tmpScoreID, text=player.tmpScore)
+
+    canvas.after(100, updatePlayerScore, canvas, player, scoreID, tmpScoreID)
 
 def updateBallPos(canvas: Canvas, ballTexture):
     canvas.coords(ballTexture, ball.x, ball.y, ball.x + ball.size, ball.y + ball.size)
@@ -112,7 +129,10 @@ def startGame():
 
     cnv.pack(fill=BOTH, expand=1)
     fGameStarted = True
+
     startRound()
+    updatePlayerScore(cnv, player1, punten1, tmpPunten1)
+    updatePlayerScore(cnv, player2, punten2, tmpPunten2)
     updateBallPos(cnv, ballTexture)
     updatePaddlesPos(cnv, paddle1, paddle2)
 
