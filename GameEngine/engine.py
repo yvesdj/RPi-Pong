@@ -18,15 +18,11 @@ def on_connect(client, userdata, flags, rc):
 
 def on_subscribe(client, userdata, mid, granted_qos):
     print("Subscribed: " + str(mid) + " " + str(granted_qos))
-
-
-def on_publish(client, userdata, mid):
-    print("mid: " + str(mid))
     
 
 def sendMessage(source:str, destination:str, message:str):
     client.publish(topic, payload="SRC="+source+"; DST="+destination+"; "+message+";",qos=0)
-    print("SRC="+source+"; DST="+destination+"; "+message+";")#TODO moet weg
+    print("Message sent:SRC="+source+"; DST="+destination+"; "+message+";")
 
 
 
@@ -95,10 +91,8 @@ def findInLoadForPlayer(load: str, player: Player):
             player.paddle.y = fieldHeight
 
     elif load.find("ACTION=SP") != -1:
-        print(player.paddle.decrementSpeed)
         if player.paddle.speed < speedMax and not player.paddle.decrementSpeed:
             player.paddle.speed += speedIncrement
-            print("player 1 speed increased to: " + str(player.paddle.speed))
 
         elif player.paddle.speed > speedMax and not player.paddle.decrementSpeed:
             player.paddle.speed = speedMax
@@ -106,14 +100,10 @@ def findInLoadForPlayer(load: str, player: Player):
 
         elif player.paddle.speed > 5 and player.paddle.decrementSpeed:
             player.paddle.speed -= speedIncrement
-            print("player 1 speed decreased to: " + str(player.paddle.speed))
 
         else:
             player.paddle.speed = 5
             player.paddle.decrementSpeed = False
-            
-    else:
-        print("Couldn't resolve message: " + load)
 
 
 def endRound():
@@ -162,9 +152,6 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
         if ball.x < fieldWidth - ball.size:
             vX = ballSpeed
         else:
-            #TODO kijk na
-            #fBallGoingRight = False niet nodig, want de ronde is over
-            #goal aan de rechter kant
             goal = "R"
             print("\n\nScored R\n\n")
 
@@ -172,9 +159,6 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
         if ball.x > 0:
             vX = -ballSpeed
         else:
-            #TODO kijk na
-            #fBallGoingRight = True niet nodig, want de ronde is over
-            #goal aan de linker kant
             goal = "L"
             print("\n\nScored L\n\n")
 
@@ -202,7 +186,6 @@ def isBallCollisionWithPaddle(ball: Ball, paddle: Paddle) -> bool:
 def checkCollision(ball: Ball):
     global fBallGoingRight
     for player in players:
-        print(isBallCollisionWithPaddle(ball, player.paddle))
         if isBallCollisionWithPaddle(ball, player.paddle):
             print("\n\n COLLISION \n\n")
             player.tmpScore += 5
@@ -238,7 +221,6 @@ if __name__ == "__main__":
         client.on_connect = on_connect
         client.on_subscribe = on_subscribe
         client.on_message = on_message
-        client.on_publish = on_publish
         client.connect(broker, 1883)
 
         client.loop_start()
