@@ -62,11 +62,12 @@ def on_message(client, userdata, msg):
         elif load.find("MSG=REFRESHMENU;"):
             startGame()
             
-    elif load.find("DST=ALL") != 1:
+    if load.find("DST=ALL") != 1:
         if load.find("MSG=NEWROUND") != 1:
             global round
             print("\n\n AddingRound \n\n")
-            round += 1
+            round = int(extractStrValueFromString(load, "RND=", ";"))
+            print(round)
 
 
 
@@ -79,10 +80,10 @@ def on_message(client, userdata, msg):
 def on_publish(client, userdata, mid):
     print("mid: " + str(mid))
 
-def updateRound(canvas: Canvas, roundId):
-    canvas.itemconfigure(roundId, text=round)
+def updateRound(canvas: Canvas, roundId, rValue):
+    canvas.itemconfigure(roundId, text=rValue)
 
-    canvas.after(1000, updateRound, canvas, roundId)
+    canvas.after(1000, updateRound, canvas, roundId, rValue)
 
 def updatePlayerScore(canvas: Canvas, player: Player, scoreID, tmpScoreID):
     canvas.itemconfigure(scoreID, text=player.score)
@@ -115,12 +116,13 @@ def startButtonPressed():
 def startGame():
     global wFrame, window, fGameStarted
     global paddle1, paddle2, cnv
+    global round
     clearScreen()
     cnv = Canvas(wFrame, bg="#121212", width=800, height=600)
     midline = cnv.create_rectangle(395, 0, 405, 600, fill="#FFFFFF")
 
     roundLabel = cnv.create_text(700, 570, fill="white", text="Ronde: ", anchor="ne")
-    round = cnv.create_text(710, 570, fill="white", text="0", anchor="nw")
+    roundId = cnv.create_text(710, 570, fill="white", text="0", anchor="nw")
 
     paddle1 = cnv.create_rectangle(10, 10, 30, 110, fill="red")
     tmpPuntenLabel1 = cnv.create_text(150, 10, fill="white", text="tmpPunten: ", anchor="ne")
@@ -141,7 +143,7 @@ def startGame():
     cnv.pack(fill=BOTH, expand=1)
     fGameStarted = True
 
-    updateRound(cnv, round)
+    updateRound(cnv, roundId, round)
     updatePlayerScore(cnv, player1, punten1, tmpPunten1)
     updatePlayerScore(cnv, player2, punten2, tmpPunten2)
     updateBallPos(cnv, ballTexture)
