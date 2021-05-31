@@ -96,7 +96,7 @@ def clearScreen():
     wFrame = Frame(window)
     wFrame.pack()
 
-def startButtonPressed:
+def startButtonPressed():
     client.publish(topic, payload="SRC=DISPL; DST=ENG; MSG=STARTGAME;", qos=0)
     client.publish(topic, payload="SRC=DISPL; DST=DISPL; MSG=REFRESHMENU;", qos=0)
     
