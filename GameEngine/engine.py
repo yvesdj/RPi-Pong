@@ -64,6 +64,12 @@ def on_message(client, userdata, msg):
             player.tmpScore = 0
             player.paddle.speed = 5
             player.paddle.y = 10
+        
+        # ball = Ball(390, 410, 10)
+        ball.x = 395
+        ball.y = 405
+
+
         rounds = 0
         configMessages = ("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=L; ","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0","RACKET=R; ")
         for msg in configMessages:
@@ -113,9 +119,13 @@ def findInLoadForPlayer(load: str, player: Player):
 
 def endRound():
     global rounds
+    
+    ball.x = 395
+    ball.y = 405
     #nieuwe ronde starten
     if rounds < 10:
         rounds += 1
+        
         sendMessage("ENG","ALL","MSG=NEWROUND")
         return False
         
@@ -212,7 +222,7 @@ if __name__ == "__main__":
     player1 = Player(paddle1, 0, 0)
     player2 = Player(paddle2, 0, 0)
     players = (player1, player2)
-    ball = Ball(390, 410, 10)
+    ball = Ball(395, 405, 10)
     fBallGoingDown = True
     fBallGoingRight = True
 
@@ -244,7 +254,7 @@ if __name__ == "__main__":
             for player in players:
                 if player.paddle.side != goalSide:
                     player.score += player.tmpScore
-                    sendMessage("ENG","DISPL","RACKET=" + player.paddle.side +"SCORE=" + str(player.score))
+                    sendMessage("ENG","DISPL","RACKET=" + player.paddle.side + "; " + "SCORE=" + str(player.score))
                 player.tmpScore = 0
                 sendMessage("ENG","DISPL","RACKET=" + player.paddle.side + "; " + "TMPSCR=0")
             

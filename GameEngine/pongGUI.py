@@ -7,10 +7,13 @@ import paho.mqtt.client as mqtt
 
 
 def extractStrValueFromString(message: str, searchVar: str, endNotation: str) -> str:
-    start = message.find(searchVar)
-    end = message[start:].find(endNotation)
+    if message.find(searchVar) != -1:
+        start = message.find(searchVar)
+        end = message[start:].find(endNotation)
 
-    return message[start + len(searchVar) : start + end]
+        return message[start + len(searchVar) : start + end]
+    else:
+        return "0"
 
 def getBallPos(ball: Ball, message: str):
     ball.x = int(extractStrValueFromString(message, "BALL_X=", ";"))
@@ -36,9 +39,11 @@ def on_message(client, userdata, msg):
             # print(result)
         elif load.find("RACKET") != -1:
             if extractStrValueFromString(load, "RACKET=", ";") == "L":
-                getPaddlePos(player1.paddle, load)
+                if load.find("HEIGHT"):
+                    getPaddlePos(player1.paddle, load)
             elif extractStrValueFromString(load, "RACKET=", ";") == "R":
-                getPaddlePos(player2.paddle, load)
+                if load.find("HEIGHT"):
+                    getPaddlePos(player2.paddle, load)
             else:
                 print("Undefined Racket.")
             
@@ -96,20 +101,20 @@ def startGame():
     updateBallPos(cnv, ballTexture)
     updatePaddlesPos(cnv, paddle1, paddle2)
 
-def keypress(event):
-    y1 = 0
-    if event.char == "w": y1 = -10
-    elif event.char == "s": y1 = 10
-    cnv.move(paddle1, 0, y1)
+# def keypress(event):
+#     y1 = 0
+#     if event.char == "w": y1 = -10
+#     elif event.char == "s": y1 = 10
+#     cnv.move(paddle1, 0, y1)
     
-    y2 = 0
-    if event.char == "o": y2 = -10
-    elif event.char == "l": y2 = 10
-    cnv.move(paddle2, 0, y2)
+#     y2 = 0
+#     if event.char == "o": y2 = -10
+#     elif event.char == "l": y2 = 10
+#     cnv.move(paddle2, 0, y2)
 
 
 if __name__ == "__main__":
-    ball = Ball(390, 410, 10)
+    ball = Ball(395, 405, 10)
 
     paddleL = Paddle("L", 10, 10, 20, 100, 5, False)
     paddleR = Paddle("R", 770, 10, 20, 100, 5, False)
@@ -139,7 +144,7 @@ if __name__ == "__main__":
 
     wFrame.pack()
     
-    window.bind("<Key>", keypress)
+    # window.bind("<Key>", keypress)
 
     try:
 
