@@ -59,12 +59,15 @@ def on_publish(client, userdata, mid):
 
 
 def updateBallPos(canvas: Canvas, ballTexture):
-    global ball
-    # canvas.move(ballTexture, ball.x, ball.y)
-    # canvas.after(100, updateBallPos, canvas, ballTexture)
-    # print(ball.x, ball.y)
     canvas.coords(ballTexture, ball.x, ball.y, ball.x + ball.size, ball.y + ball.size)
+
     canvas.after(100, updateBallPos, canvas, ballTexture)
+
+def updatePaddlesPos(canvas: Canvas, paddleTexture, paddleTexture2):
+    canvas.coords(paddleTexture, player1.paddle.x, player1.paddle.y, player1.paddle.x + player1.paddle.width, player1.paddle.y + player1.paddle.height)
+    canvas.coords(paddleTexture2, player2.paddle.x, player2.paddle.y, player2.paddle.x + player2.paddle.width, player2.paddle.y + player2.paddle.height)
+
+    canvas.after(100, updatePaddlesPos, canvas, paddleTexture, paddleTexture2)
 
 def clearScreen():
     global wFrame, window
@@ -91,6 +94,7 @@ def startGame():
     cnv.pack(fill=BOTH, expand=1)
     fGameStarted = True
     updateBallPos(cnv, ballTexture)
+    updatePaddlesPos(cnv, paddle1, paddle2)
 
 def keypress(event):
     y1 = 0
