@@ -1,3 +1,4 @@
+from tkinter.constants import TRUE
 from Model.Player import Player
 from Model.Paddle import Paddle
 from Model.Ball import Ball
@@ -30,7 +31,7 @@ def sendMessage(source:str, destination:str, message:str):
 
 def assignPaddles():
 #wijs een random paddle toe aan de spelers
-    random = rnd.uniform(0,1)
+    random = rnd.randint(0,1)
     if random:
         player1.paddle = paddle1
         player2.paddle = paddle2
@@ -47,7 +48,7 @@ def on_message(client, userdata, msg):
 #actie bij detecteren van een bericht
     global rounds, speedMax, speedIncrement
     global fieldWidth, fieldHeight
-    global newGame
+    global newGame, roundStarted
 
     load = str(msg.payload)
     
@@ -76,6 +77,7 @@ def on_message(client, userdata, msg):
             sendMessage("ENG","DISPL",msg)
         sendMessage("ENG","ALL","MSG=NEWGAME")
         newGame = True
+        roundStarted = True
         
     else:
         print("Couldn't resolve message: " + load)
@@ -226,6 +228,7 @@ if __name__ == "__main__":
     fBallGoingDown = True
     fBallGoingRight = True
 
+    roundStarted = False
     newGame = False
 
 
@@ -247,7 +250,7 @@ if __name__ == "__main__":
             goalSide = "N/A"
             
             #roundloop
-            while(goalSide == "N/A"):
+            while(goalSide == "N/A" and roundStarted):
                 goalSide = updateBallPos(ball, 10, 0.5)
 
             #goal is gemaakt

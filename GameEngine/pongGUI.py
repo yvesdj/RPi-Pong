@@ -63,6 +63,10 @@ def on_publish(client, userdata, mid):
 
 
 
+def startRound():
+    client.publish(topic, payload="SRC=DISPL; DST=ENG; MSG=STARTGAME;", qos=0)
+
+
 def updateBallPos(canvas: Canvas, ballTexture):
     canvas.coords(ballTexture, ball.x, ball.y, ball.x + ball.size, ball.y + ball.size)
 
@@ -98,6 +102,7 @@ def startGame():
 
     cnv.pack(fill=BOTH, expand=1)
     fGameStarted = True
+    startRound()
     updateBallPos(cnv, ballTexture)
     updatePaddlesPos(cnv, paddle1, paddle2)
 
