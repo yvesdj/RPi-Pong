@@ -216,6 +216,8 @@ if __name__ == "__main__":
     fBallGoingDown = True
     fBallGoingRight = True
 
+    newGame = False
+
 
     #try om het correct af te kunnen afsluiten
     try:
