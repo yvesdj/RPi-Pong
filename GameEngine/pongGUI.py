@@ -14,6 +14,9 @@ def getBallPos(ball: Ball, message: str):
     ball.x = extractVarValueFromString(message, "BALL_X=", ";")
     ball.y = extractVarValueFromString(message, "BALL_Y=", ";")
 
+def getPaddlePos():
+    print()
+
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code", rc)
     client.subscribe(topic)
@@ -29,6 +32,7 @@ def on_message(client, userdata, msg):
             global ball
             getBallPos(ball, load)
             # print(result)
+        # elif load.find()
 
 
     else:

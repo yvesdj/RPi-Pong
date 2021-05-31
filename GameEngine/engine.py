@@ -53,9 +53,9 @@ def on_message(client, userdata, msg):
     
     SRCindex = load.find("SRC=CTRL")
     if SRCindex != -1:
-        p = load[SRCindex+8:SRCindex+9]
+        p = int(load[SRCindex+8:SRCindex+9])
         findInLoadForPlayer(load, players[p])
-        sendMessage("ENG","DISP","RACKET="+players[p].paddle.side+"; HEIGHT=" + str(players[p].paddle.y))
+        sendMessage("ENG","DISP","RACKET=" + players[p].paddle.side+"; HEIGHT=" + str(players[p].paddle.y))
 
     #nieuw spel beginnen                    
     elif load.find("MSG=STARTGAME") != -1:
@@ -237,9 +237,9 @@ if __name__ == "__main__":
             for player in players:
                 if player.paddle.side != goalSide:
                     player.score += player.tmpScore
-                    sendMessage("ENG","DISP","RACKET="+player.paddle.side+"SCORE="+player.score)
+                    sendMessage("ENG","DISP","RACKET=" + player.paddle.side +"SCORE=" + str(player.score))
                 player.tmpScore = 0
-                sendMessage("ENG","DISP","RACKET="+player.paddle.side+"TMPSCR=0")
+                sendMessage("ENG","DISP","RACKET=" + player.paddle.side +"TMPSCR=0")
             
             endGame = endRound()
             while (endGame):
