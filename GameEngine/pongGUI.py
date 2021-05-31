@@ -60,6 +60,12 @@ def on_message(client, userdata, msg):
                 print("Undefined Racket.")
             
             print(str(player1.paddle.y) + "\n" + str(player2.paddle.y))
+    elif load.find("DST=ALL") != 1:
+        if load.find("MSG=NEWROUND") != 1:
+            global round
+            print("\n\n AddingRound \n\n")
+            round += 1
+
 
 
 
@@ -78,11 +84,16 @@ def on_publish(client, userdata, mid):
 def startRound():
     client.publish(topic, payload="SRC=DISPL; DST=ENG; MSG=STARTGAME;", qos=0)
 
+def updateRound(canvas: Canvas, roundId):
+    canvas.itemconfigure(roundId, text=round)
+
+    canvas.after(1000, updateRound, canvas, roundId)
+
 def updatePlayerScore(canvas: Canvas, player: Player, scoreID, tmpScoreID):
     canvas.itemconfigure(scoreID, text=player.score)
     canvas.itemconfigure(tmpScoreID, text=player.tmpScore)
 
-    canvas.after(100, updatePlayerScore, canvas, player, scoreID, tmpScoreID)
+    canvas.after(1000, updatePlayerScore, canvas, player, scoreID, tmpScoreID)
 
 def updateBallPos(canvas: Canvas, ballTexture):
     canvas.coords(ballTexture, ball.x, ball.y, ball.x + ball.size, ball.y + ball.size)
@@ -131,6 +142,7 @@ def startGame():
     fGameStarted = True
 
     startRound()
+    updateRound(cnv, round)
     updatePlayerScore(cnv, player1, punten1, tmpPunten1)
     updatePlayerScore(cnv, player2, punten2, tmpPunten2)
     updateBallPos(cnv, ballTexture)
@@ -145,6 +157,8 @@ if __name__ == "__main__":
     paddleR = Paddle("R", 770, 10, 20, 100, 5, False)
     player1 = Player(paddleL, 0, 0)
     player2 = Player(paddleR, 0, 0)
+
+    round = 0
 
 
     broker = "broker.mqttdashboard.com"
