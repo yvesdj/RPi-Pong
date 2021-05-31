@@ -135,26 +135,7 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
     vX, vY = 0, 0
     
     goal = "N/A"
-    for player in players:
-        Xtouch,Ytouch = False,False
-        # for paddleX in range(player.paddle.x, player.paddle.x + player.paddle.width):
-        #     if ball.x == paddleX:
-        #         Xtouch = True
-
-        for paddleY in range(player.paddle.y, player.paddle.y + player.paddle.height):
-            if ball.y == paddleY:
-                Ytouch = True
-
-        if Ytouch:
-            player.tmpScore += 5
-            fBallGoingRight = not fBallGoingRight
-            Ytouch = False
-            # break
-        #bal raakt en paddle en keert terug + geeft punt aan speler
-        # if Xtouch and Ytouch:
-        #     player.tmpScore += 5
-        #     fBallGoingRight = not fBallGoingRight
-        #     break
+    checkCollision(ball)
 
     if fBallGoingDown == True:
         if ball.y < fieldHeight - ball.size:
@@ -190,6 +171,30 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
     sendMessage("ENG","DISPL","BALL_X=" + str(ball.x) + "; BALL_Y=" + str(ball.y))
     sleep(refreshTime)
     return goal 
+
+def isBallCollisionWithPaddle(ball: Ball, paddle: Paddle) -> bool:
+    topB = ball.y
+    bottomB = ball.y + ball.size
+    leftB = ball.x
+    rightB = ball.x + ball.size
+
+    topP = paddle.y
+    bottomP = paddle.y + paddle.height
+    leftP = paddle.x
+    rightP = paddle.x + paddle.width
+
+    if (topB > bottomP or rightB < leftP or bottomB < topP or leftB > rightP):
+        return False
+    return True
+
+def checkCollision(ball: Ball):
+    global fBallGoingRight
+    for player in players:
+        print(isBallCollisionWithPaddle(ball, player.paddle))
+        if isBallCollisionWithPaddle(ball, player.paddle):
+            print("\n\n COLLISION \n\n")
+            player.tmpScore += 5
+            fBallGoingRight = not fBallGoingRight
 
 
 if __name__ == "__main__":
@@ -239,7 +244,7 @@ if __name__ == "__main__":
                     player.score += player.tmpScore
                     sendMessage("ENG","DISPL","RACKET=" + player.paddle.side +"SCORE=" + str(player.score))
                 player.tmpScore = 0
-                sendMessage("ENG","DISPL","RACKET=" + player.paddle.side +"TMPSCR=0")
+                sendMessage("ENG","DISPL","RACKET=" + player.paddle.side + "; " + "TMPSCR=0")
             
             endGame = endRound()
             while (endGame):
