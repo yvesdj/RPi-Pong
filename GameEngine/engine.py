@@ -26,6 +26,7 @@ def on_publish(client, userdata, mid):
 
 def sendMessage(source:str, destination:str, message:str):
     client.publish(topic, payload="SRC="+source+"; DST="+destination+"; "+message+";",qos=0)
+    print("SRC="+source+"; DST="+destination+"; "+message+";")#TODO moet weg
 
 
 
@@ -48,7 +49,7 @@ def on_message(client, userdata, msg):
 #actie bij detecteren van een bericht
     global rounds, speedMax, speedIncrement
     global fieldWidth, fieldHeight
-    global newGame, roundStarted
+    global waitForStart
 
     load = str(msg.payload)
     
@@ -72,15 +73,11 @@ def on_message(client, userdata, msg):
 
 
         rounds = 0
-        configMessages = ("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=L; ","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0","RACKET=R; ")
+        configMessages = ("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0")
         for msg in configMessages:
             sendMessage("ENG","DISPL",msg)
         sendMessage("ENG","ALL","MSG=NEWGAME")
-        newGame = True
-        roundStarted = True
-        
-    else:
-        print("Couldn't resolve message: " + load)
+        waitForStart = False
 
 
 def findInLoadForPlayer(load: str, player: Player):
@@ -231,9 +228,9 @@ if __name__ == "__main__":
     ball = Ball(395, 405, 10)
     fBallGoingDown = True
     fBallGoingRight = True
-
-    roundStarted = False
-    newGame = False
+    waitForStart = True
+    endGame = False
+    
 
 
     #try om het correct af te kunnen afsluiten
@@ -246,15 +243,19 @@ if __name__ == "__main__":
 
         client.loop_start()
         #client.loop_forever()
-        endGame = False
         
+        #wachten op display
+        while (waitForStart):
+            sleep(0.1)
+        else:
+            print("Game started")
         #gameloop
-        while (True):
+        while (not endGame):
             assignPaddles()
             goalSide = "N/A"
             
             #roundloop
-            while(goalSide == "N/A" and roundStarted):
+            while(goalSide == "N/A"):
                 goalSide = updateBallPos(ball, 15, 0.5)
 
             #goal is gemaakt
@@ -266,12 +267,7 @@ if __name__ == "__main__":
                 sendMessage("ENG","DISPL","RACKET=" + player.paddle.side + "; " + "TMPSCR=0")
             
             endGame = endRound()
-            while (endGame):
-                #TODO niet zeker of dit werkt
-                #het zou misschien kunnen lukken zonder de if
-                #wachten op startgame message van display
-                if newGame:
-                    endGame = False
+            
             
 
     #afsluiten
