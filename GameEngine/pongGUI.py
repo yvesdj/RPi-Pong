@@ -91,10 +91,20 @@ def startGame():
     cnv = Canvas(wFrame, bg="#121212", width=800, height=600)
     midline = cnv.create_rectangle(395, 0, 405, 600, fill="#FFFFFF")
 
+    roundLabel = cnv.create_text(700, 570, fill="white", text="Ronde: ", anchor="ne")
+    round = cnv.create_text(710, 570, fill="white", text="0", anchor="nw")
+
     paddle1 = cnv.create_rectangle(10, 10, 30, 110, fill="red")
-    # paddleBox1 = cnv.bbox(paddle1)
+    tmpPuntenLabel1 = cnv.create_text(150, 10, fill="white", text="tmpPunten: ", anchor="ne")
+    tmpPunten1 = cnv.create_text(160, 10, fill="white", text="0", anchor="nw")
+    puntenLabel1 = cnv.create_text(150, 30, fill="white", text="Punten: ", anchor="ne")
+    punten1 = cnv.create_text(160, 30, fill="white", text="0", anchor="nw")
 
     paddle2 = cnv.create_rectangle(770, 10, 790, 110, fill="blue")
+    tmpPuntenLabel2 = cnv.create_text(700, 10, fill="white", text="tmpPunten: ", anchor="ne")
+    tmpPunten2 = cnv.create_text(710, 10, fill="white", text="0", anchor="nw")
+    puntenLabel2 = cnv.create_text(700, 30, fill="white", text="Punten: ", anchor="ne")
+    punten2 = cnv.create_text(710, 30, fill="white", text="0", anchor="nw")
     # paddleBox2 = cnv.bbox(paddle2)
 
     ballTexture = cnv.create_rectangle(390, 290, 410, 310, fill="white")
@@ -106,16 +116,6 @@ def startGame():
     updateBallPos(cnv, ballTexture)
     updatePaddlesPos(cnv, paddle1, paddle2)
 
-# def keypress(event):
-#     y1 = 0
-#     if event.char == "w": y1 = -10
-#     elif event.char == "s": y1 = 10
-#     cnv.move(paddle1, 0, y1)
-    
-#     y2 = 0
-#     if event.char == "o": y2 = -10
-#     elif event.char == "l": y2 = 10
-#     cnv.move(paddle2, 0, y2)
 
 
 if __name__ == "__main__":
