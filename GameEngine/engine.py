@@ -238,7 +238,7 @@ if __name__ == "__main__":
             
             #roundloop
             while(goalSide == "N/A"):
-                goalSide = updateBallPos(ball, 15, 0.5)
+                goalSide = updateBallPos(ball, 9, 0.3)
 
             #goal is gemaakt
             for player in players:
