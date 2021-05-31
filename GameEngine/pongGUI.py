@@ -145,7 +145,7 @@ if __name__ == "__main__":
     player2 = Player(paddleR, 0, 0)
 
 
-    broker = "broker.mqttdashboard.com"
+    broker = "87.67.133.107"
     topic = "TeamCL1-4/Pong"
     client = mqtt.Client()
 
