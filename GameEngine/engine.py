@@ -2,7 +2,7 @@ from Model.Player import Player
 from Model.Paddle import Paddle
 from Model.Ball import Ball
 import paho.mqtt.client as mqtt
-import random
+import random as rnd
 from time import sleep
 
 
@@ -30,16 +30,16 @@ def sendMessage(source:str, destination:str, message:str):
 
 def assignPaddles():
 #wijs een random paddle toe aan de spelers
-        random = random.randint(0,1)
-        if random:
-            player1.paddle = paddle1
-            player2.paddle = paddle2
-        else:
-            player1.paddle = paddle2
-            player2.paddle = paddle1
+    random = rnd.uniform(0,1)
+    if random:
+        player1.paddle = paddle1
+        player2.paddle = paddle2
+    else:
+        player1.paddle = paddle2
+        player2.paddle = paddle1
 
-        for i,player in enumerate(players,start=1):
-            sendMessage("ENG","CTRL"+str(i),"ASSIGNED_RACKET="+player.paddle.side)
+    for i,player in enumerate(players,start=1):
+        sendMessage("ENG","CTRL"+str(i),"ASSIGNED_RACKET="+player.paddle.side)
 
 
 
@@ -65,7 +65,7 @@ def on_message(client, userdata, msg):
             player.paddle.speed = 5
             player.paddle.y = 10
         rounds = 0
-        configMessages("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=L; ","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0","RACKET=R; ")
+        configMessages = ("RACKET=L; HEIGHT=10","RACKET=L; SCORE=0","RACKET=L; TMPSCR=0","RACKET=L; ","RACKET=R; HEIGHT=10","RACKET=R; SCORE=0","RACKET=R; TMPSCR=0","RACKET=R; ")
         for msg in configMessages:
             sendMessage("ENG","DISP",msg)
         sendMessage("ENG","ALL","MSG=NEWGAME")
@@ -137,16 +137,24 @@ def updateBallPos(ball: Ball, ballSpeed: int, refreshTime:float):
     goal = "N/A"
     for player in players:
         Xtouch,Ytouch = False,False
-        for paddleX range(player.paddle.x, player.paddle.x+player.paddle.width)
-            if bal.x == paddleX:
-                Xtouch = True
-            if bal.y == paddleY:
+        # for paddleX in range(player.paddle.x, player.paddle.x + player.paddle.width):
+        #     if ball.x == paddleX:
+        #         Xtouch = True
+
+        for paddleY in range(player.paddle.y, player.paddle.y + player.paddle.height):
+            if ball.y == paddleY:
                 Ytouch = True
-            #bal raakt en paddle en keert terug + geeft punt aan speler
-            if Xtouch and Ytouch:
-                player.tmpScore += 5
-                fBallGoingRight = !BallGoingRight
-                break
+
+        if Ytouch:
+            player.tmpScore += 5
+            fBallGoingRight = not fBallGoingRight
+            Ytouch = False
+            # break
+        #bal raakt en paddle en keert terug + geeft punt aan speler
+        # if Xtouch and Ytouch:
+        #     player.tmpScore += 5
+        #     fBallGoingRight = not fBallGoingRight
+        #     break
 
     if fBallGoingDown == True:
         if ball.y < fieldHeight - ball.size:
@@ -196,8 +204,8 @@ if __name__ == "__main__":
     fieldWidth, fieldHeight = 800, 600
     paddle1 = Paddle("L", 10, 10, 20, 90, 5, False)
     paddle2 = Paddle("R", 770, 10, 20, 90, 5, False)
-    player1 = Player(paddle1, 0)
-    player2 = Player(paddle2, 0)
+    player1 = Player(paddle1, 0, 0)
+    player2 = Player(paddle2, 0, 0)
     players = (player1, player2)
     ball = Ball(390, 410, 10)
     fBallGoingDown = True
